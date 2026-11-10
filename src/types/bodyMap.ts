@@ -76,5 +76,27 @@ export interface BodyPartEvaluation {
   }>;
 }
 
+/** Callout annotation overlay (Image 1 HUD style) */
+export interface BodyCallout {
+  id: string;
+  targetPartId: string;
+  code: string;
+  title: string;
+  subtitle: string;
+  targetX: number;
+  targetY: number;
+  labelX: number;
+  labelY: number;
+  align: 'left' | 'right';
+}
+
+/** Layer visibility state for the digital twin */
+export interface HoloLayersState {
+  surface: boolean;
+  skeleton: boolean;
+  organs: boolean;
+  landmarks: boolean;
+}
+
 /** Legacy alias kept so BodyMapPage.tsx continues to compile */
 export type BodyPartId = string;

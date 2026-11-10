@@ -1,0 +1,74 @@
+[
+  {
+    "id": "cns",
+    "targetPartId": "brain",
+    "code": "01 / CNS",
+    "title": "NEURAL MAP",
+    "subtitle": "CORTICAL VOLUME",
+    "targetX": 50.0,
+    "targetY": 16.5,
+    "labelX": 70.0,
+    "labelY": 15.0,
+    "align": "left"
+  },
+  {
+    "id": "pulm",
+    "targetPartId": "lung-right",
+    "code": "02 / PULM",
+    "title": "RESPIRATORY",
+    "subtitle": "BILATERAL LOBES",
+    "targetX": 42.0,
+    "targetY": 47.5,
+    "labelX": 24.0,
+    "labelY": 44.0,
+    "align": "right"
+  },
+  {
+    "id": "cvs",
+    "targetPartId": "heart",
+    "code": "03 / CVS",
+    "title": "CARDIAC MODEL",
+    "subtitle": "CORONARY DISPLAY",
+    "targetX": 53.5,
+    "targetY": 47.0,
+    "labelX": 70.0,
+    "labelY": 47.0,
+    "align": "left"
+  },
+  {
+    "id": "msk-spine",
+    "targetPartId": "spine",
+    "code": "04 / MSK",
+    "title": "SPINAL AXIS",
+    "subtitle": "VERTEBRAL CHAIN",
+    "targetX": 50.0,
+    "targetY": 66.0,
+    "labelX": 24.0,
+    "labelY": 66.0,
+    "align": "right"
+  },
+  {
+    "id": "gi",
+    "targetPartId": "stomach",
+    "code": "05 / GI",
+    "title": "ORGAN ATLAS",
+    "subtitle": "ABDOMINAL LAYER",
+    "targetX": 56.5,
+    "targetY": 65.5,
+    "labelX": 70.0,
+    "labelY": 76.0,
+    "align": "left"
+  },
+  {
+    "id": "joint",
+    "targetPartId": "knee-left",
+    "code": "06 / MSK",
+    "title": "JOINT TRACKING",
+    "subtitle": "SKELETAL LANDMARKS",
+    "targetX": 56.0,
+    "targetY": 147.5,
+    "labelX": 70.0,
+    "labelY": 146.0,
+    "align": "left"
+  }
+]

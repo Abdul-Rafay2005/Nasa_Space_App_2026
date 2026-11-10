@@ -2,200 +2,288 @@
   {
     "id": "brain",
     "shape": "ellipse",
-    "cx": 50, "cy": 4.5, "rx": 7, "ry": 4,
+    "cx": 50.0,
+    "cy": 16.5,
+    "rx": 5.5,
+    "ry": 5.0,
     "label": "Brain"
   },
   {
     "id": "eye-right",
     "shape": "ellipse",
-    "cx": 44.5, "cy": 7.2, "rx": 2.2, "ry": 1.5,
+    "cx": 47.0,
+    "cy": 17.5,
+    "rx": 1.6,
+    "ry": 1.4,
     "label": "Right Eye (Patient)"
   },
   {
     "id": "eye-left",
     "shape": "ellipse",
-    "cx": 55.5, "cy": 7.2, "rx": 2.2, "ry": 1.5,
+    "cx": 53.0,
+    "cy": 17.5,
+    "rx": 1.6,
+    "ry": 1.4,
     "label": "Left Eye (Patient)"
   },
   {
     "id": "neck",
     "shape": "ellipse",
-    "cx": 50, "cy": 12.0, "rx": 4, "ry": 2.5,
+    "cx": 50.0,
+    "cy": 28.0,
+    "rx": 3.5,
+    "ry": 2.8,
     "label": "Neck & Cervical Spine"
   },
   {
     "id": "shoulder-right",
     "shape": "ellipse",
-    "cx": 36.5, "cy": 15.5, "rx": 5.5, "ry": 4,
+    "cx": 31.0,
+    "cy": 35.0,
+    "rx": 4.8,
+    "ry": 4.2,
     "label": "Right Shoulder (Patient)"
   },
   {
     "id": "shoulder-left",
     "shape": "ellipse",
-    "cx": 63.5, "cy": 15.5, "rx": 5.5, "ry": 4,
+    "cx": 69.0,
+    "cy": 35.0,
+    "rx": 4.8,
+    "ry": 4.2,
     "label": "Left Shoulder (Patient)"
   },
   {
     "id": "lung-right",
     "shape": "ellipse",
-    "cx": 41, "cy": 22, "rx": 6.5, "ry": 7,
+    "cx": 42.0,
+    "cy": 47.5,
+    "rx": 5.5,
+    "ry": 8.5,
     "label": "Right Lung (Patient)"
   },
   {
     "id": "lung-left",
     "shape": "ellipse",
-    "cx": 59, "cy": 22, "rx": 6.5, "ry": 7,
+    "cx": 58.0,
+    "cy": 47.5,
+    "rx": 5.5,
+    "ry": 8.5,
     "label": "Left Lung (Patient)"
   },
   {
     "id": "heart",
     "shape": "ellipse",
-    "cx": 55, "cy": 21, "rx": 4.5, "ry": 4.5,
+    "cx": 53.5,
+    "cy": 47.0,
+    "rx": 4.2,
+    "ry": 4.8,
     "label": "Heart"
   },
   {
     "id": "upper-arm-right",
     "shape": "ellipse",
-    "cx": 28, "cy": 26, "rx": 4.5, "ry": 9,
+    "cx": 28.5,
+    "cy": 52.0,
+    "rx": 4.0,
+    "ry": 12.0,
     "label": "Right Upper Arm (Patient)"
   },
   {
     "id": "upper-arm-left",
     "shape": "ellipse",
-    "cx": 72, "cy": 26, "rx": 4.5, "ry": 9,
+    "cx": 71.5,
+    "cy": 52.0,
+    "rx": 4.0,
+    "ry": 12.0,
     "label": "Left Upper Arm (Patient)"
   },
   {
     "id": "liver",
     "shape": "ellipse",
-    "cx": 43, "cy": 32, "rx": 6, "ry": 4.5,
+    "cx": 42.0,
+    "cy": 65.0,
+    "rx": 5.5,
+    "ry": 5.0,
     "label": "Liver"
   },
   {
     "id": "stomach",
     "shape": "ellipse",
-    "cx": 55, "cy": 32, "rx": 4.5, "ry": 3.5,
+    "cx": 56.5,
+    "cy": 65.5,
+    "rx": 4.5,
+    "ry": 4.5,
     "label": "Stomach"
   },
   {
     "id": "forearm-right",
     "shape": "ellipse",
-    "cx": 25, "cy": 42, "rx": 3.5, "ry": 8,
+    "cx": 23.5,
+    "cy": 86.5,
+    "rx": 3.5,
+    "ry": 13.0,
     "label": "Right Forearm (Patient)"
   },
   {
     "id": "forearm-left",
     "shape": "ellipse",
-    "cx": 75, "cy": 42, "rx": 3.5, "ry": 8,
+    "cx": 76.5,
+    "cy": 86.5,
+    "rx": 3.5,
+    "ry": 13.0,
     "label": "Left Forearm (Patient)"
   },
   {
     "id": "kidney-right",
     "shape": "ellipse",
-    "cx": 42, "cy": 37, "rx": 3.5, "ry": 4,
+    "cx": 41.0,
+    "cy": 76.0,
+    "rx": 3.2,
+    "ry": 4.0,
     "label": "Right Kidney (Patient)"
   },
   {
     "id": "kidney-left",
     "shape": "ellipse",
-    "cx": 58, "cy": 37, "rx": 3.5, "ry": 4,
+    "cx": 59.0,
+    "cy": 76.0,
+    "rx": 3.2,
+    "ry": 4.0,
     "label": "Left Kidney (Patient)"
   },
   {
     "id": "spine",
     "shape": "ellipse",
-    "cx": 50, "cy": 36, "rx": 2.5, "ry": 12,
+    "cx": 50.0,
+    "cy": 60.0,
+    "rx": 2.5,
+    "ry": 24.0,
     "label": "Spine"
   },
   {
     "id": "intestine",
     "shape": "ellipse",
-    "cx": 50, "cy": 44, "rx": 7, "ry": 6,
+    "cx": 50.0,
+    "cy": 85.0,
+    "rx": 6.5,
+    "ry": 5.5,
     "label": "Intestines"
   },
   {
     "id": "hand-right",
-    "shape": "ellipse",
-    "cx": 23, "cy": 53, "rx": 3.5, "ry": 4.5,
+    "shape": "polygon",
+    "points": "17.5,103 24.0,103 27.0,114 26.0,118 22.5,128 19.5,129 16.0,125 15.5,113",
     "label": "Right Hand (Patient)"
   },
   {
     "id": "hand-left",
-    "shape": "ellipse",
-    "cx": 77, "cy": 53, "rx": 3.5, "ry": 4.5,
+    "shape": "polygon",
+    "points": "82.5,103 76.0,103 73.0,114 74.0,118 77.5,128 80.5,129 84.0,125 84.5,113",
     "label": "Left Hand (Patient)"
   },
   {
     "id": "pelvis",
     "shape": "ellipse",
-    "cx": 50, "cy": 52, "rx": 9, "ry": 4.5,
+    "cx": 50.0,
+    "cy": 97.0,
+    "rx": 9.0,
+    "ry": 5.5,
     "label": "Pelvis"
   },
   {
     "id": "hip-right",
     "shape": "ellipse",
-    "cx": 40, "cy": 56, "rx": 5, "ry": 4,
+    "cx": 41.5,
+    "cy": 103.0,
+    "rx": 4.0,
+    "ry": 3.8,
     "label": "Right Hip (Patient)"
   },
   {
     "id": "hip-left",
     "shape": "ellipse",
-    "cx": 60, "cy": 56, "rx": 5, "ry": 4,
+    "cx": 58.5,
+    "cy": 103.0,
+    "rx": 4.0,
+    "ry": 3.8,
     "label": "Left Hip (Patient)"
   },
   {
     "id": "femur-right",
     "shape": "ellipse",
-    "cx": 39, "cy": 67, "rx": 5, "ry": 9,
+    "cx": 43.0,
+    "cy": 125.0,
+    "rx": 4.2,
+    "ry": 13.5,
     "label": "Right Femur/Thigh (Patient)"
   },
   {
     "id": "femur-left",
     "shape": "ellipse",
-    "cx": 61, "cy": 67, "rx": 5, "ry": 9,
+    "cx": 57.0,
+    "cy": 125.0,
+    "rx": 4.2,
+    "ry": 13.5,
     "label": "Left Femur/Thigh (Patient)"
   },
   {
     "id": "knee-right",
     "shape": "ellipse",
-    "cx": 39, "cy": 77, "rx": 4.5, "ry": 3,
+    "cx": 44.0,
+    "cy": 147.5,
+    "rx": 3.5,
+    "ry": 3.5,
     "label": "Right Knee (Patient)"
   },
   {
     "id": "knee-left",
     "shape": "ellipse",
-    "cx": 61, "cy": 77, "rx": 4.5, "ry": 3,
+    "cx": 56.0,
+    "cy": 147.5,
+    "rx": 3.5,
+    "ry": 3.5,
     "label": "Left Knee (Patient)"
   },
   {
     "id": "lower-leg-right",
     "shape": "ellipse",
-    "cx": 38.5, "cy": 86, "rx": 4, "ry": 7,
+    "cx": 43.5,
+    "cy": 165.5,
+    "rx": 3.5,
+    "ry": 11.5,
     "label": "Right Lower Leg (Patient)"
   },
   {
     "id": "lower-leg-left",
     "shape": "ellipse",
-    "cx": 61.5, "cy": 86, "rx": 4, "ry": 7,
+    "cx": 56.5,
+    "cy": 165.5,
+    "rx": 3.5,
+    "ry": 11.5,
     "label": "Left Lower Leg (Patient)"
   },
   {
     "id": "foot-right",
     "shape": "ellipse",
-    "cx": 37, "cy": 95, "rx": 5.5, "ry": 3.5,
+    "cx": 40.5,
+    "cy": 189.0,
+    "rx": 4.8,
+    "ry": 3.5,
     "label": "Right Foot (Patient)"
   },
   {
     "id": "foot-left",
     "shape": "ellipse",
-    "cx": 63, "cy": 95, "rx": 5.5, "ry": 3.5,
+    "cx": 59.5,
+    "cy": 189.0,
+    "rx": 4.8,
+    "ry": 3.5,
     "label": "Left Foot (Patient)"
   },
   {
     "id": "skin",
-    "shape": "ellipse",
-    "cx": 50, "cy": 50, "rx": 48, "ry": 48,
+    "shape": "polygon",
     "label": "Skin & Integument"
   }
 ]
-

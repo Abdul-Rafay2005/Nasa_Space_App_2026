@@ -1,15 +1,15 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Interactive Body Figure — Photo overlay edition
+ * Module: Interactive Body Figure — Holographic Digital Twin Edition
  * Second Developer: Sameen (Phase 1/2 Visualization Engine)
  *
- * Uses the realistic anatomy illustration at /anatomy/body-full.png
- * with an SVG overlay (viewBox="0 0 100 100") carrying percentage-coordinate hotspots
- * loaded from src/data/bodyHotspots.json.
+ * Implements the "HUMAN DIGITAL TWIN" center panel from the mission control interface.
+ * Built entirely with vector SVG, four toggleable layers (Surface, Skeleton, Organs, Landmarks),
+ * interactive telemetry hotspots, data-driven HUD callouts, and clinical decision support triage.
  *
- * All part metadata lives in src/data/bodyParts.json.
- * bilateral:true parts auto-expand to -left / -right variants.
- * Parts with no linkedIndicators show a neutral GREY educational status.
+ * All part definitions: src/data/bodyParts.json
+ * All hotspot geometries: src/data/bodyHotspots.json
+ * All HUD callouts: src/data/bodyCallouts.json
  */
 
 import React, {
@@ -21,17 +21,21 @@ import React, {
 } from 'react';
 import rawBodyParts from '../../data/bodyParts.json';
 import rawHotspots from '../../data/bodyHotspots.json';
+import rawCallouts from '../../data/bodyCallouts.json';
 
 import {
   BodyPartDefinition,
   BodyPartEvaluation,
   BodyHotspot,
+  BodyCallout,
   ResolvedBodyPart,
   IndicatorKey,
+  HoloLayersState,
 } from '../../types/bodyMap';
 import { DailyAssessmentRecord, HealthStatus } from '../../types/health';
 import { StatusBadge } from '../common/StatusBadge';
 import { Card } from '../common/Card';
+import { HoloBody } from './HoloBody';
 import {
   Activity,
   Heart,
@@ -48,11 +52,14 @@ import {
   Edit3,
   Download,
   X,
+  Layers,
+  Radio,
 } from 'lucide-react';
 
 // ─── Type-safe JSON imports ───────────────────────────────────────────────────
 const bodyPartsData = rawBodyParts as BodyPartDefinition[];
 const hotspotsData = rawHotspots as BodyHotspot[];
+const calloutsData = rawCallouts as BodyCallout[];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,24 +113,6 @@ function resolveBodyParts(defs: BodyPartDefinition[]): ResolvedBodyPart[] {
   return out;
 }
 
-function getStatusGlowColor(status: ExtendedStatus, opacity: number): string {
-  switch (status) {
-    case 'RED':    return `rgba(239, 68, 68, ${opacity})`;
-    case 'YELLOW': return `rgba(245, 158, 11, ${opacity})`;
-    case 'GREEN':  return `rgba(16, 185, 129, ${opacity})`;
-    default:       return `rgba(100, 116, 139, ${opacity})`; // slate-500
-  }
-}
-
-function getStatusStroke(status: ExtendedStatus): string {
-  switch (status) {
-    case 'RED':    return '#ef4444';
-    case 'YELLOW': return '#f59e0b';
-    case 'GREEN':  return '#10b981';
-    default:       return '#64748b';
-  }
-}
-
 function getStatusDotClass(status: ExtendedStatus): string {
   switch (status) {
     case 'RED':    return 'bg-rose-500 animate-pulse';
@@ -145,8 +134,14 @@ const SYSTEM_ICON_MAP: Record<string, React.ReactNode> = {
 };
 
 const SYSTEM_ORDER: string[] = [
-  'Neurological', 'Cardiovascular', 'Pulmonary', 'Metabolic',
-  'Gastrointestinal', 'Renal', 'Musculoskeletal', 'Integumentary',
+  'Neurological',
+  'Cardiovascular',
+  'Pulmonary',
+  'Metabolic',
+  'Gastrointestinal',
+  'Renal',
+  'Musculoskeletal',
+  'Integumentary',
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -159,12 +154,20 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
   const resolvedParts = useMemo(() => resolveBodyParts(bodyPartsData), []);
   const [hotspots, setHotspots] = useState<BodyHotspot[]>(hotspotsData);
 
+  // 4 Toggleable layers matching Image 1
+  const [layers, setLayers] = useState<HoloLayersState>({
+    surface: true,
+    skeleton: true,
+    organs: true,
+    landmarks: true,
+  });
+
   const [selectedId, setSelectedId] = useState<string>('heart');
-  const [hoveredId, setHoveredId]   = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightId, setHighlightId] = useState<string | null>(null);
-  const [editMode, setEditMode]       = useState(false);
-  const [dragState, setDragState]     = useState<DragState | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [dragState, setDragState] = useState<DragState | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -185,9 +188,9 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
         // No linked indicator → neutral grey educational status
         map.set(rp.id, {
           resolvedPart: rp,
-          status: 'GREEN', // neutral — we'll represent separately via ExtendedStatus
+          status: 'GREEN',
           statusLabel: statusLabels.NEUTRAL,
-          dominantReason: 'Educational information only — no live telemetry indicator is currently linked to this region. Data will be populated after Nov 13 NASA resource delivery.',
+          dominantReason: 'Educational information only — no live telemetry indicator is currently linked to this region. Telemetry models will expand with Nov 13 NASA resources.',
           contributingIndicators: [],
         });
         continue;
@@ -242,14 +245,13 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
     if (onSelectPart) onSelectPart(id);
   }, [onSelectPart]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent, id: string) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(id); }
-  }, [handleSelect]);
-
   // ─── Search ─────────────────────────────────────────────────────────────────
   const handleSearch = (q: string) => {
     setSearchQuery(q);
-    if (!q.trim()) { setHighlightId(null); return; }
+    if (!q.trim()) {
+      setHighlightId(null);
+      return;
+    }
     const lower = q.toLowerCase();
     const match = resolvedParts.find(
       (p) =>
@@ -266,7 +268,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
   };
 
   // ─── Edit-mode drag ─────────────────────────────────────────────────────────
-  const handleHotspotMouseDown = (e: React.MouseEvent, id: string) => {
+  const handleHotspotMouseDown = (e: React.MouseEvent<SVGElement>, id: string) => {
     if (!editMode) return;
     e.preventDefault();
     const hs = hotspots.find((h) => h.id === id);
@@ -286,13 +288,13 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
       if (!svgRef.current) return;
       const rect = svgRef.current.getBoundingClientRect();
       const scaleX = 100 / rect.width;
-      const scaleY = 100 / rect.height;
+      const scaleY = 200 / rect.height;
       const dx = (e.clientX - dragState.startMouseX) * scaleX;
       const dy = (e.clientY - dragState.startMouseY) * scaleY;
       setHotspots((prev) =>
         prev.map((h) =>
           h.id === dragState.hotspotId
-            ? { ...h, cx: dragState.startCx + dx, cy: dragState.startCy + dy }
+            ? { ...h, cx: Math.round((dragState.startCx + dx) * 10) / 10, cy: Math.round((dragState.startCy + dy) * 10) / 10 }
             : h
         )
       );
@@ -300,7 +302,10 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
     const onUp = () => setDragState(null);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
   }, [dragState]);
 
   const exportHotspots = () => {
@@ -308,7 +313,9 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
     const blob = new Blob([json], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = 'bodyHotspots.json'; a.click();
+    a.href = url;
+    a.download = 'bodyHotspots.json';
+    a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -333,83 +340,20 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
     );
   }, [resolvedParts, searchQuery]);
 
-  // ─── Render hotspot shape ────────────────────────────────────────────────────
-  const renderHotspot = (hs: BodyHotspot) => {
-    // find the resolved part for this hotspot id
-    const rp = resolvedParts.find((p) => p.id === hs.id);
-    const ev = rp ? evaluations.get(rp.id) : undefined;
-    const noIndicators = !ev || ev.contributingIndicators.length === 0;
-    const extStatus: ExtendedStatus = noIndicators ? 'NEUTRAL' : (ev?.status ?? 'GREEN');
-
-    const isSelected  = selectedId  === hs.id;
-    const isHovered   = hoveredId   === hs.id;
-    const isHighlight = highlightId === hs.id;
-
-    const baseOpacity  = editMode ? 0.4 : isSelected ? 0.35 : isHovered ? 0.25 : 0.0;
-    const strokeOpacity = editMode ? 1 : isSelected || isHovered || isHighlight ? 1 : 0;
-    const fill   = getStatusGlowColor(extStatus, baseOpacity);
-    const stroke = isSelected || isHighlight ? '#22d3ee' : getStatusStroke(extStatus);
-    const strokeW = isSelected ? 1.5 : isHovered ? 1.0 : editMode ? 0.8 : 0;
-
-    const sharedProps = {
-      fill,
-      stroke,
-      strokeWidth: strokeW,
-      strokeOpacity,
-      style: {
-        cursor: editMode ? 'move' : 'pointer',
-        filter: (isSelected || isHighlight)
-          ? `drop-shadow(0 0 6px ${getStatusGlowColor(extStatus, 0.9)})`
-          : isHovered
-          ? `drop-shadow(0 0 4px ${getStatusGlowColor(extStatus, 0.7)})`
-          : 'none',
-        transition: editMode ? 'none' : 'fill 0.15s, stroke 0.15s',
-      },
-      tabIndex: 0,
-      role: 'button' as const,
-      'aria-label': `${hs.label}${rp ? ` — ${ev?.statusLabel ?? ''}` : ''}`,
-      'aria-pressed': isSelected,
-      onClick:    () => { if (!editMode && rp) handleSelect(rp.id); },
-      onKeyDown:  (e: React.KeyboardEvent<SVGElement>) => { if (rp) handleKeyDown(e, rp.id); },
-      onMouseEnter: () => setHoveredId(hs.id),
-      onMouseLeave: () => setHoveredId(null),
-      onMouseDown: (e: React.MouseEvent<SVGElement>) => handleHotspotMouseDown(e, hs.id),
-    };
-
-    if (hs.shape === 'ellipse' && hs.cx != null && hs.cy != null) {
-      return (
-        <ellipse
-          key={hs.id}
-          cx={`${hs.cx}%`}
-          cy={`${hs.cy}%`}
-          rx={`${hs.rx ?? 5}%`}
-          ry={`${hs.ry ?? 5}%`}
-          {...sharedProps}
-        />
-      );
-    }
-    if (hs.shape === 'polygon' && hs.points) {
-      // Convert space-separated "x,y" percentage pairs to SVG polygon points
-      return (
-        <polygon
-          key={hs.id}
-          points={hs.points}
-          {...sharedProps}
-        />
-      );
-    }
-    return null;
-  };
-
   // ─── Info panel icon ─────────────────────────────────────────────────────────
   const getSystemIcon = (system: string): React.ReactNode =>
     SYSTEM_ICON_MAP[system] ?? <Activity className="w-4 h-4 text-cyan-400" />;
+
+  // ─── Layer Toggle Handler ───────────────────────────────────────────────────
+  const toggleLayer = (layerKey: keyof HoloLayersState) => {
+    setLayers((prev) => ({ ...prev, [layerKey]: !prev[layerKey] }));
+  };
 
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className={`space-y-4 ${className}`}>
 
-      {/* ── Top toolbar ───────────────────────────────────────────────────── */}
+      {/* ── Top Mission Control Bar ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-space-900/90 border border-slate-800 text-xs">
         {/* Search */}
         <div className="relative flex-1 max-w-xs">
@@ -425,6 +369,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
             <button
               onClick={() => { setSearchQuery(''); setHighlightId(null); }}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+              aria-label="Clear search"
             >
               <X className="w-3 h-3" />
             </button>
@@ -482,10 +427,10 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
         </div>
       </div>
 
-      {/* ── Main grid ─────────────────────────────────────────────────────── */}
+      {/* ── Main Grid ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-        {/* ── LEFT: Anatomy image + SVG overlay ─────────────────────────── */}
+        {/* ── LEFT: Human Digital Twin Hologram Panel ───────────────────────── */}
         <div className="lg:col-span-5 flex flex-col items-center gap-4">
 
           {editMode && (
@@ -494,65 +439,104 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
             </div>
           )}
 
-          {/* Body panel: image + SVG overlay stacked */}
-          <div
-            className="relative w-full max-w-[300px] rounded-2xl overflow-hidden"
-            style={{ aspectRatio: '1 / 2' }}
-          >
-            {/* Corner ticks */}
-            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400/50 z-10 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400/50 z-10 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-cyan-400/50 z-10 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400/50 z-10 pointer-events-none" />
+          {/* Holographic Body Container (Matches Image 1 Center Twin Panel) */}
+          <div className="relative w-full rounded-2xl overflow-hidden bg-space-950 border border-cyan-500/30 shadow-2xl shadow-cyan-950/30 p-3">
 
-            {/* Background — dark panel, no border on image */}
-            <div className="absolute inset-0 bg-gradient-to-b from-space-950 via-space-900 to-space-950" />
+            {/* Corner Sci-Fi Tech Brackets */}
+            <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-cyan-400/60 z-10 pointer-events-none" />
+            <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-cyan-400/60 z-10 pointer-events-none" />
+            <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-cyan-400/60 z-10 pointer-events-none" />
+            <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-cyan-400/60 z-10 pointer-events-none" />
 
-            {/* Subtle dot-grid ambiance */}
+            {/* Subtle Matrix Dot Grid Background */}
             <div
-              className="absolute inset-0 opacity-10 pointer-events-none"
+              className="absolute inset-0 opacity-15 pointer-events-none"
               style={{
                 backgroundImage: 'radial-gradient(#22d3ee 1px, transparent 1px)',
-                backgroundSize: '14px 14px',
+                backgroundSize: '16px 16px',
               }}
             />
 
-            {/* Anatomy photo — transparent PNG, blends into dark background */}
-            <img
-              src="/anatomy/body-full.png"
-              alt="Frontal anatomy illustration — interactive regions highlighted above"
-              className="absolute inset-0 w-full h-full object-contain"
-              style={{ mixBlendMode: 'screen', opacity: 0.92 }}
-              draggable={false}
-            />
+            {/* Top HUD Header */}
+            <div className="relative z-10 flex items-start justify-between border-b border-cyan-500/20 pb-2 mb-2">
+              <div>
+                <div className="text-[11px] font-mono font-bold tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <Radio className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+                  <span>02 &nbsp; HUMAN DIGITAL TWIN</span>
+                </div>
+                <div className="text-[9px] font-mono tracking-widest text-slate-500 uppercase">
+                  MULTILAYER VOLUME / ANTERIOR PROJECTION
+                </div>
+              </div>
 
-            {/* SVG overlay — viewBox 0 0 100 100 (percentage coords) */}
-            <svg
-              ref={svgRef}
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              className="absolute inset-0 w-full h-full"
-              style={{ userSelect: 'none' }}
-              role="img"
-              aria-label="Interactive anatomical body map with clickable telemetry regions"
-            >
-              {/* Render skin hotspot last (behind all others) so it doesn't eat clicks */}
-              {hotspots.filter((h) => h.id !== 'skin').map(renderHotspot)}
-            </svg>
+              {/* Active Scan Indicator */}
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>ACTIVE SCAN</span>
+              </div>
+            </div>
 
-            {/* Selected part mini-label */}
-            <div className="absolute bottom-0 left-0 right-0 px-3 py-1.5 flex items-center justify-between bg-space-950/90 backdrop-blur-md text-[11px] border-t border-slate-800">
-              <span className="text-slate-400 font-mono">SELECTED</span>
-              <span className="text-cyan-300 font-semibold truncate max-w-[55%] text-right">
-                {activeEval?.resolvedPart.displayName ?? '—'}
-              </span>
+            {/* Center Vector Holographic Body Figure (Scales to ~90% panel height) */}
+            <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] flex items-center justify-center">
+              <HoloBody
+                layers={layers}
+                hotspots={hotspots}
+                resolvedParts={resolvedParts}
+                evaluations={evaluations}
+                callouts={calloutsData}
+                selectedId={selectedId}
+                hoveredId={hoveredId}
+                highlightId={highlightId}
+                editMode={editMode}
+                onSelectPart={handleSelect}
+                onHoverPart={setHoveredId}
+                onHotspotMouseDown={handleHotspotMouseDown}
+                svgRef={svgRef}
+              />
+
+              {/* Bottom-Left Layers Legend (Directly matching Image 1) */}
+              <div className="absolute bottom-2 left-2 z-20 p-2 rounded-lg bg-space-950/90 backdrop-blur-md border border-cyan-500/30 text-[10px] font-mono space-y-1 shadow-lg">
+                <div className="text-slate-500 uppercase tracking-wider font-bold mb-1 flex items-center gap-1">
+                  <Layers className="w-3 h-3 text-cyan-400" />
+                  <span>LAYERS</span>
+                </div>
+                {(['surface', 'skeleton', 'organs', 'landmarks'] as const).map((layerKey) => {
+                  const isActive = layers[layerKey];
+                  return (
+                    <button
+                      key={layerKey}
+                      onClick={() => toggleLayer(layerKey)}
+                      className="flex items-center gap-1.5 text-left w-full hover:text-cyan-200 transition-colors"
+                      title={`Toggle ${layerKey.toUpperCase()} layer`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-[2px] border transition-all ${
+                          isActive
+                            ? 'bg-cyan-400 border-cyan-300 shadow-[0_0_6px_rgba(34,211,238,0.7)]'
+                            : 'bg-transparent border-slate-600'
+                        }`}
+                      />
+                      <span className={isActive ? 'text-cyan-300' : 'text-slate-500'}>
+                        {layerKey.toUpperCase()}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom HUD Telemetry Status Strip */}
+            <div className="relative z-10 mt-2 pt-2 border-t border-cyan-500/20 flex items-center justify-between text-[10px] font-mono text-slate-400">
+              <span className="text-slate-500">01 / VOLUME</span>
+              <span className="text-cyan-400">02 / ANATOMY</span>
+              <span className="text-slate-500">03 / TRACKING (12/12)</span>
             </div>
           </div>
 
-          {/* ── Chip grid grouped by system ─────────────────────────────── */}
-          <div className="w-full max-w-[300px] max-h-56 overflow-y-auto rounded-xl bg-space-950/80 border border-slate-800 p-2 space-y-2 scrollbar-thin scrollbar-track-space-950 scrollbar-thumb-slate-700">
+          {/* ── Chips Grid Grouped by System (All 33 parts, L/R side-by-side, no stray comma) ── */}
+          <div className="w-full max-h-60 overflow-y-auto rounded-xl bg-space-950/80 border border-slate-800 p-2.5 space-y-2.5 scrollbar-thin scrollbar-track-space-950 scrollbar-thumb-slate-700">
             {searchQuery.trim()
-              ? /* flat filtered list */
+              ? /* Flat filtered list */
                 (<div className="flex flex-wrap gap-1">
                   {filteredParts.map((p) => {
                     const ev = evaluations.get(p.id);
@@ -562,7 +546,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                       <button
                         key={p.id}
                         onClick={() => handleSelect(p.id)}
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border transition-all ${
+                        className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono border transition-all ${
                           selectedId === p.id
                             ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400'
                             : 'bg-space-900 text-slate-400 border-slate-800 hover:text-slate-200'
@@ -574,10 +558,10 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                     );
                   })}
                 </div>)
-              : /* grouped by system */
+              : /* Grouped by system with bilateral L/R paired side-by-side */
                 SYSTEM_ORDER.map((sys) => {
                   const parts = partsBySystem[sys];
-                  if (!parts) return null;
+                  if (!parts || parts.length === 0) return null;
                   return (
                     <div key={sys}>
                       <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
@@ -595,12 +579,11 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                               onClick={() => handleSelect(p.id)}
                               className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border transition-all ${
                                 selectedId === p.id
-                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-neon-cyan/20'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.3)]'
                                   : 'bg-space-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
                               }`}
                             >
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDotClass(extSt)}`} />
-                              {/* Use short name: "Right Femur" → "R.Femur" for bilateral */}
                               {p.side !== 'none'
                                 ? `${p.side === 'right' ? 'R.' : 'L.'}${p.definition.name}`
                                 : p.definition.name}
@@ -615,7 +598,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
           </div>
         </div>
 
-        {/* ── RIGHT: Info panel ───────────────────────────────────────────── */}
+        {/* ── RIGHT: Clinical Decision Support & Telemetry Info Panel ───────── */}
         <div className="lg:col-span-7 space-y-4">
           {activeEval && (
             <Card
@@ -645,7 +628,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
             >
               <div className="space-y-4 text-xs font-sans">
 
-                {/* Function */}
+                {/* Primary Function */}
                 <div>
                   <h4 className="text-[11px] font-mono uppercase text-slate-400 tracking-wider mb-1 flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-cyan-400" />
@@ -656,7 +639,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                   </p>
                 </div>
 
-                {/* Status reason */}
+                {/* Status Reason & Microgravity Triage */}
                 <div>
                   <h4 className="text-[11px] font-mono uppercase text-slate-400 tracking-wider mb-1 flex items-center gap-1.5">
                     <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
@@ -667,7 +650,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                   </p>
                 </div>
 
-                {/* Linked indicators */}
+                {/* Linked Telemetry Indicators */}
                 {activeEval.contributingIndicators.length > 0 && (
                   <div>
                     <h4 className="text-[11px] font-mono uppercase text-slate-400 tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -693,7 +676,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                   </div>
                 )}
 
-                {/* Microgravity context + countermeasures */}
+                {/* Microgravity Context + Countermeasures */}
                 <div className="grid grid-cols-1 gap-3 pt-1">
                   <div className="p-3 rounded-lg bg-space-950/60 border border-slate-800/80">
                     <div className="text-[11px] font-mono text-cyan-400 mb-1 flex items-center gap-1">
@@ -713,7 +696,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
                   </div>
                 </div>
 
-                {/* Source */}
+                {/* Scientific Source / Protocol Reference */}
                 <div className="p-3 rounded-lg bg-space-950/90 border border-cyan-500/20 text-[11px] font-mono text-slate-400">
                   <div className="flex items-center gap-1.5 text-cyan-400 mb-1 font-semibold">
                     <BookOpen className="w-3.5 h-3.5" />
