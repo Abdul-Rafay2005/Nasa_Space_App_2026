@@ -191,7 +191,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <nav className="space-y-1">
               {plannedPhase2Items.map((item) => {
                 const isActive = currentPage === item.id;
-                const isImplemented = item.id === 'body-map' || item.id === 'analytics';
+                const isImplemented =
+                  item.id === 'body-map' ||
+                  item.id === 'analytics' ||
+                  item.id === 'guidance';
                 return (
                   <button
                     key={item.id}

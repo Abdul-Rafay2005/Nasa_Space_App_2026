@@ -20,12 +20,14 @@ interface BodyMapPageProps {
   profile: AstronautProfile;
   latestAssessment?: DailyAssessmentRecord;
   onNavigateToAssessment: () => void;
+  initialSelectedPartId?: string;
 }
 
 export const BodyMapPage: React.FC<BodyMapPageProps> = ({
   profile,
   latestAssessment,
   onNavigateToAssessment,
+  initialSelectedPartId,
 }) => {
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
@@ -65,6 +67,7 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
       {/* Main Interactive Body Figure Component */}
       <BodyFigure
         latestAssessment={latestAssessment}
+        initialSelectedId={initialSelectedPartId}
       />
 
       {/* Auxiliary Context & Notice */}

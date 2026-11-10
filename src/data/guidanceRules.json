@@ -1,0 +1,309 @@
+[
+  {
+    "id": "heartRate-green",
+    "indicatorId": "heartRate",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "Nominal Cardiac Rhythm & Rate",
+    "actions": [
+      "Maintain planned daily cardiovascular countermeasure routine (T2 treadmill / cycle ergometer).",
+      "Continue standard daily hydration protocol of 2.0 to 2.5 L with electrolyte balance.",
+      "Log scheduled resting telemetry reading during evening post-exercise debrief."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if heart rate remains nominal but you experience unexpected palpitations, chest tightness, or lightheadedness.",
+    "relatedBodyPartId": "heart",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "heartRate-yellow",
+    "indicatorId": "heartRate",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Sub-Nominal Resting Heart Rate Variance",
+    "actions": [
+      "Pause intense physical countermeasure workloads for the next 2 hours.",
+      "Drink 500 mL of oral electrolyte solution to address microgravity hypovolemia.",
+      "Check telemetry sensor contact and lead attachment on the bio-harness.",
+      "Re-measure resting heart rate after 2 hours of quiet station activities."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if resting heart rate exceeds 100 BPM for two consecutive checks or is accompanied by dizziness.",
+    "remeasureIntervalHours": 2,
+    "relatedBodyPartId": "heart",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "heartRate-red",
+    "indicatorId": "heartRate",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Critical Cardiac Telemetry Alert",
+    "actions": [
+      "Cease all EVA preparations, treadmill training, and strenuous physical activities immediately.",
+      "Adopt a neutral recumbent microgravity rest posture with tethered support.",
+      "Notify crew medical officer (CMO) and standby for flight surgeon audio uplink.",
+      "Keep 12-lead ECG bio-harness streaming continuous telemetry to MCC ground station."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately via Space-to-Ground Audio Channel B or CapCom priority line.",
+    "relatedBodyPartId": "heart",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodPressure-green",
+    "indicatorId": "bloodPressure",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "Nominal Arterial Perfusion",
+    "actions": [
+      "Continue standard orbital dietary sodium intake (1.5–2.3 g/day).",
+      "Perform scheduled lower-body negative pressure (LBNP) maintenance if in mission rotation.",
+      "Record next blood pressure measurement at nominal morning check-in."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if sudden orthostatic visual narrowing or headache develops despite nominal readings.",
+    "relatedBodyPartId": "heart",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodPressure-yellow",
+    "indicatorId": "bloodPressure",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Elevated or Depressed Blood Pressure Variance",
+    "actions": [
+      "Review recent sodium and caffeine intake from station food rations.",
+      "Perform 15 minutes of lower-body muscle tensing and calf compression exercises.",
+      "Ensure proper cuff placement over the brachial artery at heart level.",
+      "Re-measure blood pressure in 4 hours while seated quietly for 5 minutes."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if systolic pressure remains above 135 mmHg or below 90 mmHg across two consecutive readings.",
+    "remeasureIntervalHours": 4,
+    "relatedBodyPartId": "kidney",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodPressure-red",
+    "indicatorId": "bloodPressure",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Severe Hemodynamic Pressure Deviation",
+    "actions": [
+      "Rest immediately in sleep quarters with minimal sensory and auditory stimulation.",
+      "Have crewmate prepare manual sphygmomanometer from Crew Medical Pack for verification.",
+      "Avoid rapid translational movements across habitat modules to prevent syncope.",
+      "Establish direct private medical conference (PMC) with MCC Flight Surgeon."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Systolic ≥ 141 mmHg or ≤ 84 mmHg indicates acute perfusion risk.",
+    "relatedBodyPartId": "heart",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodSugar-green",
+    "indicatorId": "bloodSugar",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "Balanced Metabolic Glucose Levels",
+    "actions": [
+      "Follow scheduled balanced macronutrient meal packs (50% carb, 30% fat, 20% protein).",
+      "Keep standard post-exercise carbohydrate replenishment snacks timed within 45 minutes.",
+      "Log regular check-in during morning pre-work routine."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if experiencing symptoms of shakiness, extreme thirst, or sweating.",
+    "relatedBodyPartId": "liver",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodSugar-yellow",
+    "indicatorId": "bloodSugar",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Moderate Glycemic Departure",
+    "actions": [
+      "Consume a complex carbohydrate snack with 250 mL water if reading is sub-nominal.",
+      "If elevated, delay high-sugar snack pouches and emphasize lean protein and fiber.",
+      "Verify glucometer calibration test strip lot number with station inventory.",
+      "Re-measure blood glucose level in 2 hours."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if blood sugar is <65 mg/dL with tremor or >160 mg/dL with persistent nausea.",
+    "remeasureIntervalHours": 2,
+    "relatedBodyPartId": "liver",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bloodSugar-red",
+    "indicatorId": "bloodSugar",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Critical Glucose Imbalance Alert",
+    "actions": [
+      "If hypoglycemic (<60 mg/dL), consume emergency oral glucose gel pouch immediately.",
+      "If severely hyperglycemic (>180 mg/dL), drink water continuously and check for ketones if kit available.",
+      "Crew Medical Officer must assist with repeat capillary blood verification.",
+      "Request Flight Surgeon telemetry consult for insulin or glucose countermeasure protocol."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately via mission audio loop: severe glycemic crisis compromises EVA and flight safety.",
+    "relatedBodyPartId": "liver",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bodyTemperature-green",
+    "indicatorId": "bodyTemperature",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "Nominal Core Thermoregulation",
+    "actions": [
+      "Keep habitability module ventilation ducts unobstructed to ensure convective air movement.",
+      "Wear appropriate thermal clothing layers during low-activity sleep shifts.",
+      "Log core telemetry during scheduled daily medical check-in."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if chills, feverish sensation, or localized heat discomfort occur.",
+    "relatedBodyPartId": "lung",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bodyTemperature-yellow",
+    "indicatorId": "bodyTemperature",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Elevated Microgravity Core Temperature",
+    "actions": [
+      "Adjust personal air-diffuser velocity in work compartment to maximize evaporative cooling.",
+      "Remove heavy thermal layers and apply cool damp wipes to forehead and neck.",
+      "Drink 400 mL chilled electrolyte water to support core cooling.",
+      "Re-measure core body temperature in 2 hours."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if core temperature exceeds 37.8°C or fails to drop after 2 hours of cooling.",
+    "remeasureIntervalHours": 2,
+    "relatedBodyPartId": "skin",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "bodyTemperature-red",
+    "indicatorId": "bodyTemperature",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Hyperthermia or Hypothermia Warning",
+    "actions": [
+      "Cease all physical exertion and remove any restrictive pressure or exercise garments.",
+      "Access Crew Medical Pack antipyretic protocol under CMO supervision.",
+      "Verify ECLSS cabin environmental temperature and humidity readings with ground control.",
+      "Initiate immediate Flight Surgeon voice consult for thermal regulation intervention."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Core temperature ≥ 38.0°C indicates systemic infection or severe thermoregulatory failure.",
+    "relatedBodyPartId": "lung",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "sleepDuration-green",
+    "indicatorId": "sleepDuration",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "Adequate Restorative Sleep Window",
+    "actions": [
+      "Maintain circadian sleep berth lighting schedule (dimmed blue spectrum 1 hour before sleep).",
+      "Keep sleep station earplugs and noise-canceling headsets accessible during ventilation cycles.",
+      "Aim for uninterrupted 8.0-hour sleep opportunity each orbital day."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if unrefreshing sleep or daytime sleepiness persists for more than 3 days.",
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "sleepDuration-yellow",
+    "indicatorId": "sleepDuration",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Sub-Optimal Rest Deficit",
+    "actions": [
+      "Schedule a 20 to 30-minute power rest period in private sleep station before afternoon shift.",
+      "Limit high-caffeine rations during the 6 hours preceding the next sleep window.",
+      "Verify sleep berth ventilation fan speed and carbon dioxide scrubbing levels.",
+      "Re-evaluate cumulative sleep debt after tomorrow's wake-up cycle."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if cumulative sleep duration drops below 11 hours across two consecutive days.",
+    "remeasureIntervalHours": 12,
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "sleepDuration-red",
+    "indicatorId": "sleepDuration",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Critical Sleep Deprivation & Cognitive Risk",
+    "actions": [
+      "Stand down from robotic arm teleoperation, docking operations, and critical valve maneuvering.",
+      "Complete brief cognitive readiness battery on station tablet.",
+      "Review station sleep aid medications (melatonin / zolpidem) with Flight Surgeon.",
+      "Request schedule adjustment from Mission Planning Lead to protect recovery sleep block."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Sleep < 5.0 hours triggers mandatory flight rule fatigue review.",
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "mood-green",
+    "indicatorId": "mood",
+    "level": "GREEN",
+    "levelLabel": "Self-care",
+    "title": "High Cognitive Morale & Operational Readiness",
+    "actions": [
+      "Participate in daily communal crew meal and recreational downtime.",
+      "Utilize station Cupola / Earth observation window time for mental restoration.",
+      "Continue regular family audio/video communication conferences as scheduled."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon or behavioral health specialist whenever you feel mounting psychological strain.",
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "mood-yellow",
+    "indicatorId": "mood",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Operational Stress or Sensory Fatigue",
+    "actions": [
+      "Engage in 20 minutes of guided audio meditation or binaural relaxation in private quarters.",
+      "Schedule non-operational personal conference with family or ground support team.",
+      "Review workload timeline with Commander to rebalance task allocation.",
+      "Re-evaluate behavioral state at the next shift handover."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon or Behavioral Health and Performance (BHP) team if feelings of isolation or irritability persist.",
+    "remeasureIntervalHours": 8,
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  },
+  {
+    "id": "mood-red",
+    "indicatorId": "mood",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Severe Behavioral Strain or Disorientation Alert",
+    "actions": [
+      "Step back from solitary or safety-critical mission console operations.",
+      "Notify Mission Commander or Crew Medical Officer for peer support.",
+      "Transfer to low-stimulus environment with dim ambient lighting in Crew Quarters.",
+      "Initiate confidential Private Psychological Conference (PPC) with NASA BHP team."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Acute disorientation or psychological crisis requires immediate mission support.",
+    "relatedBodyPartId": "brain",
+    "source": "To be confirmed by research team",
+    "reviewStatus": "PLACEHOLDER"
+  }
+]
+

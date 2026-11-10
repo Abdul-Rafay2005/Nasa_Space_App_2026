@@ -77,6 +77,7 @@ interface BodyFigureProps {
   latestAssessment?: DailyAssessmentRecord;
   className?: string;
   onSelectPart?: (partId: string) => void;
+  initialSelectedId?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -150,6 +151,7 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
   latestAssessment,
   className = '',
   onSelectPart,
+  initialSelectedId,
 }) => {
   const resolvedParts = useMemo(() => resolveBodyParts(bodyPartsData), []);
   const [hotspots, setHotspots] = useState<BodyHotspot[]>(hotspotsData);
@@ -162,7 +164,13 @@ export const BodyFigure: React.FC<BodyFigureProps> = ({
     landmarks: true,
   });
 
-  const [selectedId, setSelectedId] = useState<string>('heart');
+  const [selectedId, setSelectedId] = useState<string>(initialSelectedId ?? 'heart');
+
+  useEffect(() => {
+    if (initialSelectedId) {
+      setSelectedId(initialSelectedId);
+    }
+  }, [initialSelectedId]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightId, setHighlightId] = useState<string | null>(null);

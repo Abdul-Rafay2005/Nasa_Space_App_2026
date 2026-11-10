@@ -13,6 +13,7 @@ import { HealthHistory } from './pages/HealthHistory';
 import { HealthOverview } from './pages/HealthOverview';
 import { TrendAnalyticsPage } from './pages/TrendAnalyticsPage';
 import { BodyMapPage } from './pages/BodyMapPage';
+import { FlightSurgeonGuidancePage } from './pages/FlightSurgeonGuidancePage';
 import { FeaturePlaceholder } from './pages/Placeholders';
 import {
   getStoredAssessments,
@@ -27,6 +28,7 @@ export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<NavigationPage>('dashboard');
   const [profile, setProfile] = useState<AstronautProfile>(getAstronautProfile());
   const [records, setRecords] = useState<DailyAssessmentRecord[]>(getStoredAssessments());
+  const [selectedBodyPartId, setSelectedBodyPartId] = useState<string | undefined>();
 
   // Listen to storage or refresh
   useEffect(() => {
@@ -109,10 +111,23 @@ export const App: React.FC = () => {
           profile={profile}
           latestAssessment={latestAssessment}
           onNavigateToAssessment={() => setCurrentPage('assessment')}
+          initialSelectedPartId={selectedBodyPartId}
         />
       )}
 
-      {(currentPage === 'routine' || currentPage === 'guidance') && (
+      {currentPage === 'guidance' && (
+        <FlightSurgeonGuidancePage
+          profile={profile}
+          latestAssessment={latestAssessment}
+          onNavigateToAssessment={() => setCurrentPage('assessment')}
+          onNavigateToBodyMap={(partId) => {
+            setSelectedBodyPartId(partId);
+            setCurrentPage('body-map');
+          }}
+        />
+      )}
+
+      {currentPage === 'routine' && (
         <FeaturePlaceholder
           pageId={currentPage}
           onNavigateToDashboard={() => setCurrentPage('dashboard')}
