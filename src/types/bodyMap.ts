@@ -6,8 +6,6 @@
 
 import { HealthStatus } from './health';
 
-export type BodyPartId = 'head' | 'chest' | 'lungs' | 'abdomen' | 'arms' | 'legs';
-
 export type IndicatorKey =
   | 'heartRate'
   | 'bloodPressure'
@@ -16,19 +14,56 @@ export type IndicatorKey =
   | 'sleepDuration'
   | 'mood';
 
+/** System grouping for sidebar chip display */
+export type BodySystem =
+  | 'Neurological'
+  | 'Cardiovascular'
+  | 'Pulmonary'
+  | 'Metabolic'
+  | 'Gastrointestinal'
+  | 'Renal'
+  | 'Musculoskeletal'
+  | 'Integumentary';
+
+/** Raw definition from bodyParts.json — bilateral:true auto-generates -left / -right */
 export interface BodyPartDefinition {
-  id: BodyPartId;
+  id: string;
   name: string;
+  system: BodySystem;
+  bilateral: boolean;
   regionName: string;
   shortFunction: string;
   linkedIndicators: IndicatorKey[];
   source: string;
+  reviewStatus: 'placeholder' | 'reviewed' | 'approved';
   description: string;
   countermeasures: string;
 }
 
-export interface BodyPartEvaluation {
+/** Resolved part after bilateral expansion — id may be "femur-left" etc. */
+export interface ResolvedBodyPart {
+  id: string;               // e.g. "femur-left"
+  baseId: string;           // e.g. "femur" (matches hotspot base)
+  displayName: string;      // e.g. "Left Femur (Thigh)"
+  side: 'left' | 'right' | 'none';
   definition: BodyPartDefinition;
+}
+
+/** Hotspot from bodyHotspots.json */
+export interface BodyHotspot {
+  id: string;               // e.g. "femur-right"  or  "heart"
+  shape: 'ellipse' | 'polygon';
+  cx?: number;
+  cy?: number;
+  rx?: number;
+  ry?: number;
+  points?: string;          // for polygon, space-separated "x,y x,y ..."
+  label: string;
+}
+
+/** Evaluated state for one resolved part */
+export interface BodyPartEvaluation {
+  resolvedPart: ResolvedBodyPart;
   status: HealthStatus;
   statusLabel: string;
   dominantReason: string;
@@ -41,3 +76,5 @@ export interface BodyPartEvaluation {
   }>;
 }
 
+/** Legacy alias kept so BodyMapPage.tsx continues to compile */
+export type BodyPartId = string;
