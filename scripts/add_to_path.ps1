@@ -7,3 +7,4 @@ if ($currentPath -notlike "*$nodeDir*") {
 } else {
     Write-Host "INFO: $nodeDir is already in User PATH."
 }
+

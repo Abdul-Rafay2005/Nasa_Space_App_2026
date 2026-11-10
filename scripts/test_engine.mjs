@@ -175,3 +175,4 @@ check(calculateOverall(['YELLOW', 'YELLOW', 'YELLOW', 'YELLOW', 'YELLOW', 'RED']
 
 console.log(`\nTOTAL VERIFIED: ${pass} PASSED, ${fail} FAILED`);
 if (fail > 0) process.exit(1);
+

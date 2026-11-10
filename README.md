@@ -189,3 +189,4 @@ node scripts/test_engine.mjs
 
 > **IMPORTANT NOTICE:**  
 > Aegis Health is an engineering prototype developed for the **NASA Space Apps Challenge 2026**. The health indicators, provisional demonstration thresholds, and calculated triage statuses represent simulated engineering models and **do not provide medical diagnosis, clinical advice, or replace certified NASA Flight Surgeons or certified spaceflight medical equipment**.
+
