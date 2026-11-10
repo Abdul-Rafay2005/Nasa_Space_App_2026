@@ -1,0 +1,63 @@
+[
+  {
+    "id": "head",
+    "name": "Head & Neuro-Vestibular System",
+    "regionName": "Cephalic & Sensory",
+    "shortFunction": "Monitors cognitive readiness, sleep debt, circadian rhythms, and Space Adaptation Syndrome (SAS).",
+    "linkedIndicators": ["mood", "sleepDuration"],
+    "source": "NASA Human Research Program (HRP) Behavioral Health & Neuro-vestibular Risk Protocol [Placeholder for Eman & Moazzama]",
+    "description": "Microgravity removes hydrostatic hydrostatic pressure gradients, causing cephalad fluid shift that may induce intracranial pressure elevation, headache, and vestibular disorientation.",
+    "countermeasures": "Circadian blue-light filtering, scheduled 8.5-hour restorative sleep opportunity, cognitive readiness evaluations."
+  },
+  {
+    "id": "chest",
+    "name": "Chest & Cardiovascular Core",
+    "regionName": "Cardiac & Central Arterial",
+    "shortFunction": "Monitors resting heart rate, pulse stability, and arterial blood pressure under cephalic fluid volume redistribution.",
+    "linkedIndicators": ["heartRate", "bloodPressure"],
+    "source": "NASA Space Flight Medical Operations (SFMO) Flight Rule MED-B04 [Placeholder for Eman & Moazzama]",
+    "description": "Cardiovascular deconditioning and myocardial remodeling occur due to reduced circulatory work in weightlessness, increasing orthostatic intolerance risk upon return.",
+    "countermeasures": "Daily 2.5h countermeasure workout (T2 treadmill & ARED deadlifts), fluid and electrolyte loading prior to EVA."
+  },
+  {
+    "id": "lungs",
+    "name": "Lungs & Pulmonary System",
+    "regionName": "Thoracic & ECLSS Gas Exchange",
+    "shortFunction": "Monitors ventilation efficiency, core thermal regulation, and pulmonary response to closed-loop spacecraft cabin atmosphere.",
+    "linkedIndicators": ["bodyTemperature", "heartRate"],
+    "source": "NASA ECLSS Physiological Standards & Core Thermoregulation Manual [Placeholder for Eman & Moazzama]",
+    "description": "Reduced convective cooling in weightlessness causes core temperature elevation ('space fever'), placing additional metabolic strain on cardiopulmonary heat rejection.",
+    "countermeasures": "Cabin air velocity adjustments, hydration maintenance, post-exercise active ventilation."
+  },
+  {
+    "id": "abdomen",
+    "name": "Abdomen & Metabolic System",
+    "regionName": "Gastrointestinal & Glycemic Control",
+    "shortFunction": "Oversees capillary blood glucose stability, nutrient absorption, and metabolic energy expenditure in deep space transit.",
+    "linkedIndicators": ["bloodSugar"],
+    "source": "NASA Evidence Book: Risk of Adverse Health Effects Due to Altered Nutrition and Microgravity-Induced Insulin Sensitivity [Placeholder for Eman & Moazzama]",
+    "description": "Changes in gut microbiome and microgravity-induced insulin resistance can destabilize glycemic control and carbohydrate metabolism.",
+    "countermeasures": "Strict caloric ration balance, structured dietary intervals, telemetry glucometer check-ins."
+  },
+  {
+    "id": "arms",
+    "name": "Arms & Upper Extremities",
+    "regionName": "Upper Musculoskeletal & Dexterity",
+    "shortFunction": "Maintains manual dexterity, grip strength, and forearm endurance for EVA tether ops, switchboards, and airlock maintenance.",
+    "linkedIndicators": ["heartRate", "mood"],
+    "source": "NASA Human Factors & Habitability Directorate: EVA Manual Dexterity Benchmarks [Placeholder for Eman & Moazzama]",
+    "description": "Pressurized spacesuit gloves demand extreme sustained grip exertion, leading to forearm muscle fatigue, hand numbness, or localized musculoskeletal strain.",
+    "countermeasures": "ARED upper-body cable pulls, hand-grip dyno conditioning, restorative ergonomic wrist rest intervals."
+  },
+  {
+    "id": "legs",
+    "name": "Legs, Femur & Skeletal Base",
+    "regionName": "Lower Musculoskeletal & Bone Density",
+    "shortFunction": "Monitors bone mineral density preservation (femur/tibia), calf muscle tone, and orthostatic venous pooling prevention.",
+    "linkedIndicators": ["bloodPressure", "sleepDuration"],
+    "source": "NASA Human Research Program (HRP): Bone Mineral Density Loss & Countermeasure Protocols [Placeholder for Eman & Moazzama]",
+    "description": "The absence of weight-bearing loading in microgravity triggers accelerated calcium resorption and significant calf muscle (soleus) atrophy.",
+    "countermeasures": "High-intensity resistive loading via ARED squats/heel raises, Lower Body Negative Pressure (LBNP) device cycles."
+  }
+]
+

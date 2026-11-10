@@ -11,6 +11,8 @@ import { Dashboard } from './pages/Dashboard';
 import { DailyAssessment } from './pages/DailyAssessment';
 import { HealthHistory } from './pages/HealthHistory';
 import { HealthOverview } from './pages/HealthOverview';
+import { TrendAnalyticsPage } from './pages/TrendAnalyticsPage';
+import { BodyMapPage } from './pages/BodyMapPage';
 import { FeaturePlaceholder } from './pages/Placeholders';
 import {
   getStoredAssessments,
@@ -93,10 +95,24 @@ export const App: React.FC = () => {
         />
       )}
 
-      {(currentPage === 'body-map' ||
-        currentPage === 'analytics' ||
-        currentPage === 'routine' ||
-        currentPage === 'guidance') && (
+      {currentPage === 'analytics' && (
+        <TrendAnalyticsPage
+          profile={profile}
+          records={records}
+          onRecordsChange={(updated) => setRecords(updated)}
+          onNavigateToAssessment={() => setCurrentPage('assessment')}
+        />
+      )}
+
+      {currentPage === 'body-map' && (
+        <BodyMapPage
+          profile={profile}
+          latestAssessment={latestAssessment}
+          onNavigateToAssessment={() => setCurrentPage('assessment')}
+        />
+      )}
+
+      {(currentPage === 'routine' || currentPage === 'guidance') && (
         <FeaturePlaceholder
           pageId={currentPage}
           onNavigateToDashboard={() => setCurrentPage('dashboard')}

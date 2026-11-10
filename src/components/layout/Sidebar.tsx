@@ -191,22 +191,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <nav className="space-y-1">
               {plannedPhase2Items.map((item) => {
                 const isActive = currentPage === item.id;
+                const isImplemented = item.id === 'body-map' || item.id === 'analytics';
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleItemClick(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all ${
                       isActive
-                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 font-semibold'
+                        ? isImplemented
+                          ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 font-semibold shadow-neon-cyan/15'
+                          : 'bg-amber-500/15 text-amber-300 border border-amber-500/40 font-semibold'
+                        : isImplemented
+                        ? 'text-slate-300 hover:text-slate-100 hover:bg-space-850/80 border border-slate-800/80'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-space-850/50 border border-dashed border-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-500">{item.icon}</span>
+                      <span className={isActive ? (isImplemented ? 'text-cyan-400' : 'text-amber-400') : (isImplemented ? 'text-cyan-400/80' : 'text-slate-500')}>
+                        {item.icon}
+                      </span>
                       <span className="text-left font-sans">{item.label}</span>
                     </div>
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-amber-300/90 border border-amber-500/20">
-                      Sameen
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+                        isImplemented
+                          ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/40'
+                          : 'bg-space-800 text-amber-300/90 border-amber-500/20'
+                      }`}
+                    >
+                      {isImplemented ? 'READY' : 'Sameen'}
                     </span>
                   </button>
                 );
