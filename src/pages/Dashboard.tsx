@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { AstronautProfile, DailyAssessmentRecord } from '../types/health';
 import { AssessmentDetailModal } from '../components/health/AssessmentDetailModal';
 import { analyzePhysiologicalDrift, DriftAlert } from '../services/driftDetection';
+import { HumanDigitalTwin3D } from '../components/body/HumanDigitalTwin3D';
 import {
   Heart,
   Droplets,
@@ -439,80 +440,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ── 5. Full Phase 1 / Phase 2 Tri-Column Suite (matches 08_dashboard_full_concept.png) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-        {/* 5A. Your Body Overview (lg:col-span-4) -> links to BodyMapPage */}
+        {/* 5A. Your Body Overview (lg:col-span-4) -> Interactive 3D Digital Twin with 360° Drag */}
         <div className="lg:col-span-4 p-5 rounded-2xl bg-[#0c132c]/80 border border-[#1b2752] flex flex-col justify-between backdrop-blur-xl shadow-xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-sm font-bold text-white font-sans">Your Body Overview</h3>
+              <h3 className="text-sm font-bold text-white font-sans">Human Digital Twin 3D</h3>
             </div>
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
-              Phase 1 Interactive
+            <span className="text-[10px] font-mono text-cyan-300 bg-cyan-500/15 px-2 py-0.5 rounded-full border border-cyan-500/30 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              <span>360° Live WebGL</span>
             </span>
           </div>
 
-          {/* Holographic Body Preview with Hotspot Tags */}
-          <div className="relative py-4 flex items-center justify-center min-h-[220px]">
-            {/* SVG Holographic Silhouette */}
-            <svg viewBox="0 0 100 180" className="w-32 h-auto opacity-80" fill="none">
-              {/* Sci-Fi Base Pedestal */}
-              <ellipse cx="50" cy="170" rx="42" ry="7" stroke="#06b6d4" strokeWidth="1.5" strokeDasharray="3 3" />
-              <ellipse cx="50" cy="170" rx="30" ry="5" fill="#06b6d4" fillOpacity="0.1" stroke="#06b6d4" strokeWidth="1" />
-              
-              {/* Anatomical Contour */}
-              <circle cx="50" cy="25" r="14" stroke="#06b6d4" strokeWidth="2" fill="#06b6d4" fillOpacity="0.05" />
-              <path d="M42,40 L28,50 L22,95 L28,95 L34,58 L40,58 L40,110 L34,165 L46,165 L50,115 L54,165 L66,165 L60,110 L60,58 L66,58 L72,95 L78,95 L72,50 L58,40 Z" stroke="#06b6d4" strokeWidth="2" fill="#06b6d4" fillOpacity="0.08" />
-
-              {/* Glowing Hotspots with pulse */}
-              <circle cx="50" cy="25" r="5" fill="#10b981" className="animate-pulse" />
-              <circle cx="50" cy="55" r="6" fill="#10b981" className="animate-pulse" />
-              <circle cx="46" cy="68" r="5" fill="#10b981" />
-              <circle cx="38" cy="130" r="4" fill="#10b981" />
-              <circle cx="62" cy="130" r="4" fill="#10b981" />
-            </svg>
-
-            {/* Hotspot Labels on the right side */}
-            <div className="absolute right-2 top-4 space-y-3 font-sans text-xs">
-              <button
-                onClick={() => onNavigateToBodyMap('head')}
-                className="flex items-center gap-1.5 p-1 rounded hover:bg-white/5 transition-colors text-left"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-slate-200 font-semibold">Head</span>
-                <span className="text-[10px] text-emerald-400 font-mono">Normal</span>
-              </button>
-              <button
-                onClick={() => onNavigateToBodyMap('chest')}
-                className="flex items-center gap-1.5 p-1 rounded hover:bg-white/5 transition-colors text-left"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-slate-200 font-semibold">Chest</span>
-                <span className="text-[10px] text-emerald-400 font-mono">Normal</span>
-              </button>
-              <button
-                onClick={() => onNavigateToBodyMap('heart')}
-                className="flex items-center gap-1.5 p-1 rounded hover:bg-white/5 transition-colors text-left"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-slate-200 font-semibold">Heart</span>
-                <span className="text-[10px] text-emerald-400 font-mono">Normal</span>
-              </button>
-              <button
-                onClick={() => onNavigateToBodyMap('legs')}
-                className="flex items-center gap-1.5 p-1 rounded hover:bg-white/5 transition-colors text-left"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-slate-200 font-semibold">Limbs</span>
-                <span className="text-[10px] text-emerald-400 font-mono">Normal</span>
-              </button>
-            </div>
+          {/* Interactive 3D WebGL Digital Twin (Drag to Rotate 360°) */}
+          <div className="relative my-2 rounded-2xl overflow-hidden border border-cyan-500/20 shadow-inner">
+            <HumanDigitalTwin3D
+              latestAssessment={latestAssessment}
+              onSelectOrgan={(partId) => onNavigateToBodyMap(partId)}
+              height={260}
+            />
           </div>
 
           <button
             onClick={() => onNavigateToBodyMap()}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600/30 to-blue-600/30 hover:from-cyan-600/50 hover:to-blue-600/50 border border-cyan-500/40 text-cyan-300 text-xs font-bold font-mono tracking-wider transition-all flex items-center justify-center gap-2"
+            className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600/30 to-blue-600/30 hover:from-cyan-600/50 hover:to-blue-600/50 border border-cyan-500/40 text-cyan-300 text-xs font-bold font-mono tracking-wider transition-all flex items-center justify-center gap-2"
           >
-            <span>EXPLORE FULL HOLOGRAPHIC BODY MAP</span>
+            <span>FULL SCREEN 3D BODY MAP & TELEMETRY</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

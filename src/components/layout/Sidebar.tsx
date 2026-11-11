@@ -75,15 +75,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isOpenMobile ? 'translate-x-0' : 'max-lg:-translate-x-full'
         }`}
       >
-        {/* Logo & Header (matches design mockup) */}
-        <div className="flex flex-col items-center pt-7 pb-6 px-4 border-b border-[#152042]/70">
-          {/* NASA Meatball Badge */}
-          <div className="relative mb-3 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-900/60 ring-2 ring-blue-400/30">
-              <span className="text-white font-black text-sm tracking-widest font-sans">NASA</span>
-            </div>
-            {/* Subtle orbital ring */}
-            <div className="absolute -inset-1 rounded-full border border-blue-400/20 pointer-events-none" />
+        {/* Logo & Header (Official NASA Insignia) */}
+        <div className="flex flex-col items-center pt-6 pb-5 px-4 border-b border-[#152042]/70">
+          <div className="relative mb-2 flex items-center justify-center group cursor-pointer" onClick={() => onSelectPage('dashboard')}>
+            <img
+              src="/nasa_logo.png"
+              alt="NASA Official Meatball Logo"
+              className="w-16 h-auto object-contain drop-shadow-[0_0_16px_rgba(37,99,235,0.7)] group-hover:scale-105 transition-transform"
+            />
           </div>
 
           <h1 className="text-base font-extrabold text-white tracking-wide font-sans text-center">

@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-30 w-full border-b border-[#152042]/80 bg-[#070b1a]/90 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 
-        {/* Left: Mobile Toggle */}
+        {/* Left: Mobile Toggle & Brand */}
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenMobileMenu}
@@ -51,6 +51,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Menu className="w-5 h-5" />
           </button>
+
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/nasa_logo.png"
+              alt="NASA"
+              className="w-9 h-auto object-contain drop-shadow-[0_0_10px_rgba(37,99,235,0.6)]"
+            />
+            <div className="hidden sm:block">
+              <span className="text-xs font-black tracking-widest text-white uppercase font-sans">
+                NASA SPACE HEALTH MONITOR
+              </span>
+              <span className="block text-[10px] text-cyan-400 font-mono">
+                DEEP SPACE CREW BIO-TELEMETRY
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Right side items matching 01_dashboard.png and 08_dashboard_full_concept.png */}
