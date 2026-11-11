@@ -75,20 +75,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isOpenMobile ? 'translate-x-0' : 'max-lg:-translate-x-full'
         }`}
       >
-        {/* Logo & Header (Official NASA Insignia) */}
+        {/* Logo & Header (Official NASA Insignia - Transparent & Prominent) */}
         <div className="flex flex-col items-center pt-6 pb-5 px-4 border-b border-[#152042]/70">
-          <div className="relative mb-2 flex items-center justify-center group cursor-pointer" onClick={() => onSelectPage('dashboard')}>
+          <div
+            className="relative mb-3 flex items-center justify-center group cursor-pointer"
+            onClick={() => onSelectPage('dashboard')}
+            title="NASA Space Health Monitor"
+          >
+            {/* Ambient blue glow behind meatball */}
+            <div className="absolute inset-0 bg-blue-500/25 rounded-full blur-xl group-hover:bg-blue-500/40 transition-all pointer-events-none" />
             <img
               src="/nasa_logo.png"
               alt="NASA Official Meatball Logo"
-              className="w-16 h-auto object-contain drop-shadow-[0_0_16px_rgba(37,99,235,0.7)] group-hover:scale-105 transition-transform"
+              className="relative w-28 sm:w-32 h-auto object-contain drop-shadow-[0_4px_20px_rgba(30,58,138,0.8)] group-hover:scale-105 transition-all duration-300"
             />
           </div>
 
           <h1 className="text-base font-extrabold text-white tracking-wide font-sans text-center">
             Space Health Monitor
           </h1>
-          <p className="text-[11px] font-medium text-slate-400 tracking-wider text-center mt-0.5">
+          <p className="text-[11px] font-medium text-cyan-400 tracking-wider text-center mt-0.5 font-mono">
             Stay Healthy. Go Further.
           </p>
         </div>

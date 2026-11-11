@@ -52,11 +52,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <img
               src="/nasa_logo.png"
-              alt="NASA"
-              className="w-9 h-auto object-contain drop-shadow-[0_0_10px_rgba(37,99,235,0.6)]"
+              alt="NASA Official Insignia"
+              className="w-12 sm:w-14 h-auto object-contain drop-shadow-[0_2px_12px_rgba(37,99,235,0.7)]"
             />
             <div className="hidden sm:block">
               <span className="text-xs font-black tracking-widest text-white uppercase font-sans">

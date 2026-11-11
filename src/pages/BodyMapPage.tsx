@@ -1,12 +1,17 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Interactive Body Map & 3D Human Digital Twin Page
+ * Module: Interactive Body Map & Digital Twin Page
  * Lead Developer: Abdul Rafay | Visualization: Sameen | UI: Abdullah
+ * 
+ * Supports both:
+ *  - 3D Holographic Twin (Three.js WebGL with 360° Drag Rotation & Real-time Pulsing Organs)
+ *  - 2D Digital Twin (Exact reproduction of 03_interactive_body_overview.png with ECG & Quick Info)
  */
 
 import React, { useState } from 'react';
-import { BodyFigure } from '../components/body/BodyFigure';
 import { HumanDigitalTwin3D } from '../components/body/HumanDigitalTwin3D';
+import { HumanDigitalTwin2D } from '../components/body/HumanDigitalTwin2D';
+import { BodyFigure } from '../components/body/BodyFigure';
 import { DailyAssessmentRecord, AstronautProfile } from '../types/health';
 import { Card } from '../components/common/Card';
 import {
@@ -17,6 +22,7 @@ import {
   HeartPulse,
   Rotate3d,
   Layers,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface BodyMapPageProps {
@@ -32,8 +38,8 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
   onNavigateToAssessment,
   initialSelectedPartId,
 }) => {
-  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
-  const [selectedOrganId, setSelectedOrganId] = useState<string | undefined>(initialSelectedPartId || 'heart');
+  const [viewMode, setViewMode] = useState<'3d' | '2d_clean' | '2d_detailed'>('3d');
+  const [selectedOrganId, setSelectedOrganId] = useState<string>(initialSelectedPartId || 'heart');
 
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto pb-12 select-none">
@@ -51,12 +57,12 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
               Astronaut Human Digital Twin
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-sans max-w-3xl leading-relaxed">
-              Real-time 3D interactive physiological twin. Rotate 360° to inspect cardiovascular strain, cephalic fluid shifts, core temperature dissipation, and microgravity countermeasures.
+              Explore your body and check different physiological systems. Rotate the 3D twin 360° or switch to the 2D schematic overview to inspect real-time biometrics and NASA countermeasures.
             </p>
           </div>
 
-          {/* Mode Switcher: 3D Holographic Twin vs 2D Anatomical Map */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Mode Switcher: 3D Twin vs 2D Clean vs 2D Detailed */}
+          <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-center p-1 rounded-2xl bg-[#060a1a] border border-blue-500/30 shadow-lg">
               <button
                 onClick={() => setViewMode('3d')}
@@ -70,32 +76,51 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
                 <span>3D TWIN (360°)</span>
               </button>
               <button
-                onClick={() => setViewMode('2d')}
+                onClick={() => setViewMode('2d_clean')}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all ${
-                  viewMode === '2d'
+                  viewMode === '2d_clean'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-900/40'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span>2D OVERVIEW</span>
+              </button>
+              <button
+                onClick={() => setViewMode('2d_detailed')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all ${
+                  viewMode === '2d_detailed'
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-900/40'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <Layers className="w-4 h-4" />
-                <span>2D SCHEMATIC</span>
+                <span>ANATOMICAL LAYERS</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Digital Twin Viewer */}
-      {viewMode === '3d' ? (
-        <div className="space-y-4">
-          <HumanDigitalTwin3D
-            latestAssessment={latestAssessment}
-            selectedOrganId={selectedOrganId}
-            onSelectOrgan={(id) => setSelectedOrganId(id)}
-            height={580}
-          />
-        </div>
-      ) : (
+      {/* Main Digital Twin Viewer Switch */}
+      {viewMode === '3d' && (
+        <HumanDigitalTwin3D
+          latestAssessment={latestAssessment}
+          selectedOrganId={selectedOrganId}
+          onSelectOrgan={(id) => setSelectedOrganId(id)}
+          height={600}
+        />
+      )}
+
+      {viewMode === '2d_clean' && (
+        <HumanDigitalTwin2D
+          latestAssessment={latestAssessment}
+          initialSelectedId={selectedOrganId}
+          onSelectSystem={(id) => setSelectedOrganId(id)}
+        />
+      )}
+
+      {viewMode === '2d_detailed' && (
         <BodyFigure
           latestAssessment={latestAssessment}
           initialSelectedId={selectedOrganId}
@@ -111,7 +136,7 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
           icon={<HeartPulse className="w-4 h-4 text-cyan-400" />}
         >
           <p className="text-xs text-slate-300 leading-relaxed font-sans">
-            The 3D Human Digital Twin pulses and updates in real time based on active bio-telemetry. The cardiovascular core node beats synchronously with your logged heart rate ({latestAssessment?.values.heartRate || 72} BPM), and organ aura colors reflect microgravity operational tolerances.
+            The Human Digital Twin pulses and updates in real time based on active bio-telemetry. The cardiovascular core node beats synchronously with your logged heart rate ({latestAssessment?.values.heartRate || 72} BPM), and organ aura colors reflect microgravity operational flight tolerances.
           </p>
         </Card>
 
@@ -123,7 +148,7 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
         >
           <div className="space-y-2">
             <p className="text-xs text-slate-300 leading-relaxed font-sans">
-              Organ status colors (Green/Yellow/Red) are automatically triaged from the latest telemetry check-in. If any linked vital enters a Warning or Critical state, the 3D organ illuminates with urgent advisory.
+              Organ status colors (Green/Yellow/Red) are automatically triaged from the latest telemetry check-in. If any linked vital enters a Warning or Critical state, the organ illuminates with urgent advisory.
             </p>
             {!latestAssessment && (
               <button
