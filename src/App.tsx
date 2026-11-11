@@ -1,7 +1,7 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Root Application Component
- * Lead Developer: Abdul Rafay (Phase 1 Architecture)
+ * Module: Root Application Component — Phase 2 Navigation
+ * Lead Developer: Abdul Rafay
  */
 
 import React, { useState, useEffect } from 'react';
@@ -11,9 +11,6 @@ import { Dashboard } from './pages/Dashboard';
 import { DailyAssessment } from './pages/DailyAssessment';
 import { HealthHistory } from './pages/HealthHistory';
 import { HealthOverview } from './pages/HealthOverview';
-import { TrendAnalyticsPage } from './pages/TrendAnalyticsPage';
-import { BodyMapPage } from './pages/BodyMapPage';
-import { FlightSurgeonGuidancePage } from './pages/FlightSurgeonGuidancePage';
 import { FeaturePlaceholder } from './pages/Placeholders';
 import {
   getStoredAssessments,
@@ -28,9 +25,7 @@ export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<NavigationPage>('dashboard');
   const [profile, setProfile] = useState<AstronautProfile>(getAstronautProfile());
   const [records, setRecords] = useState<DailyAssessmentRecord[]>(getStoredAssessments());
-  const [selectedBodyPartId, setSelectedBodyPartId] = useState<string | undefined>();
 
-  // Listen to storage or refresh
   useEffect(() => {
     setProfile(getAstronautProfile());
     setRecords(getStoredAssessments());
@@ -39,13 +34,11 @@ export const App: React.FC = () => {
   const latestAssessment = records.length > 0 ? records[0] : undefined;
   const isCompletedToday = hasCompletedTodayAssessment(profile.currentMissionDay);
 
-  // Handle new submission
   const handleSubmitSuccess = (newRecord: DailyAssessmentRecord) => {
     const updated = saveAssessment(newRecord);
     setRecords(updated);
   };
 
-  // Reset to realistic demonstration data
   const handleResetData = () => {
     if (window.confirm('Reset all telemetry records back to nominal demonstration data?')) {
       const resetRecords = resetToSampleData();
@@ -69,7 +62,7 @@ export const App: React.FC = () => {
           historyRecords={records}
           isCompletedToday={isCompletedToday}
           onNavigateToAssessment={() => setCurrentPage('assessment')}
-          onNavigateToHistory={() => setCurrentPage('history')}
+          onNavigateToHistory={() => setCurrentPage('analytics')}
           onNavigateToOverview={() => setCurrentPage('overview')}
         />
       )}
@@ -82,6 +75,7 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* history page — legacy, redirects to analytics */}
       {currentPage === 'history' && (
         <HealthHistory
           records={records}
@@ -97,40 +91,15 @@ export const App: React.FC = () => {
         />
       )}
 
-      {currentPage === 'analytics' && (
-        <TrendAnalyticsPage
-          profile={profile}
-          records={records}
-          onRecordsChange={(updated) => setRecords(updated)}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
-        />
-      )}
-
-      {currentPage === 'body-map' && (
-        <BodyMapPage
-          profile={profile}
-          latestAssessment={latestAssessment}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
-          initialSelectedPartId={selectedBodyPartId}
-        />
-      )}
-
-      {currentPage === 'guidance' && (
-        <FlightSurgeonGuidancePage
-          profile={profile}
-          latestAssessment={latestAssessment}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
-          onNavigateToBodyMap={(partId) => {
-            setSelectedBodyPartId(partId);
-            setCurrentPage('body-map');
-          }}
-        />
-      )}
-
-      {currentPage === 'routine' && (
+      {(currentPage === 'body-map' ||
+        currentPage === 'analytics' ||
+        currentPage === 'routine' ||
+        currentPage === 'guidance') && (
         <FeaturePlaceholder
           pageId={currentPage}
           onNavigateToDashboard={() => setCurrentPage('dashboard')}
+          records={records}
+          latestAssessment={latestAssessment}
         />
       )}
     </AppLayout>
@@ -138,4 +107,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

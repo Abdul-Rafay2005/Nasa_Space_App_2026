@@ -8,38 +8,44 @@
   }
   
   body {
-    @apply bg-space-950 text-slate-100 min-h-screen antialiased;
+    background-color: #060b18;
+    color: rgb(241 245 249);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-image: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.12), transparent 70%),
-      radial-gradient(circle 600px at 100% 100%, rgba(59, 130, 246, 0.05), transparent);
-    background-attachment: fixed;
   }
 
-  /* Custom scrollbar for dark space cockpit look */
+  /* Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
-
   ::-webkit-scrollbar-track {
-    background: #060913;
+    background: #0a0e1f;
   }
-
   ::-webkit-scrollbar-thumb {
     background: #1e293b;
     border-radius: 9999px;
   }
-
   ::-webkit-scrollbar-thumb:hover {
-    background: #06b6d4;
+    background: #3b82f6;
+  }
+
+  /* Remove number input arrows */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -48,6 +54,5 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-

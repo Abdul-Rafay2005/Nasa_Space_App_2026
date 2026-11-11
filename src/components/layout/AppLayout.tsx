@@ -1,7 +1,7 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Master Application Layout
- * Lead Developer: Abdul Rafay (Phase 1 Architecture)
+ * Module: Master Application Layout — Phase 2 UI Refresh
+ * Lead Developer: Abdul Rafay
  */
 
 import React, { useState } from 'react';
@@ -27,9 +27,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-space-950 font-sans text-slate-100">
-      
-      {/* Sidebar Navigation */}
+    <div className="flex h-screen overflow-hidden font-sans text-slate-100" style={{ background: '#060b18' }}>
+
+      {/* Sidebar */}
       <Sidebar
         currentPage={currentPage}
         onSelectPage={onSelectPage}
@@ -38,18 +38,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Content Area */}
+      {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Top Navbar */}
         <Navbar
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onResetData={onResetData}
           missionDay={astronautProfile.currentMissionDay}
         />
 
-        {/* Scrollable Page Body */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
             {children}
           </div>
         </main>
@@ -57,4 +55,3 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     </div>
   );
 };
-
