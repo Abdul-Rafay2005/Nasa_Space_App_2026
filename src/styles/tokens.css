@@ -1,0 +1,29 @@
+/**
+ * Aegis Health — Semantic Visual Design Tokens
+ * Compliant with PLAN.md Section 9.2
+ */
+
+:root {
+  /* Dark Mode Default Tokens */
+  --surface-app: #080d20;
+  --surface-panel: #0c142c;
+  --surface-raised: #121c3d;
+  --surface-subtle: #070b1a;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border-subtle: #172242;
+  --border-accent: #2563eb;
+  --border-cyan: rgba(6, 182, 212, 0.35);
+
+  --accent: #38bdf8;
+  --signal-trace: #10b981;
+  --signal-glow: rgba(16, 185, 129, 0.4);
+
+  --status-nominal: #10b981;
+  --status-warning: #f59e0b;
+  --status-critical: #ef4444;
+  --status-unknown: #64748b;
+}

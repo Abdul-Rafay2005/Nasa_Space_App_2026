@@ -1,22 +1,15 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Master Dashboard Page — Exact Replica of 01_dashboard.png
- * Features:
- *   - Exact header: "Hello, Astronaut! 👋" + "🟢 Mission Day 48" badge + Notification Bell
- *   - 3-Card Top Row:
- *       1. Circular "Health Score" (95/100, "Excellent!")
- *       2. "Overall Status" ("✔ Healthy", "All systems are nominal" + glowing neon ECG line)
- *       3. Astronaut Hero Card featuring user-provided 2nd image (/astronaut.jpg)
- *   - Middle Row:
- *       1. "Vital Signs" card (Heart Rate, Blood Pressure, Blood Sugar, Temperature, Sleep)
- *       2. "Recent Alerts" card ("✔ All good! No new alerts" + Phase 2 SBAR trigger)
- *   - Bottom: "🚀 Stay healthy. Stay mission-ready." with glowing Earth curvature atmosphere
+ * Module: Master Dashboard Page — Live Runtime Telemetry & Waveform Experience
+ * Compliant with PLAN.md Section 1, 7, and 10.1
  */
 
 import React, { useState } from 'react';
 import { AstronautProfile, DailyAssessmentRecord } from '../types/health';
 import { AssessmentDetailModal } from '../components/health/AssessmentDetailModal';
 import { analyzePhysiologicalDrift, DriftAlert } from '../services/driftDetection';
+import { LiveWaveform } from '../components/telemetry/LiveWaveform';
+import { useTelemetrySnapshot } from '../stores/telemetryStore';
 import {
   Heart,
   Droplets,
@@ -61,25 +54,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [selectedSbarAlert, setSelectedSbarAlert] = useState<DriftAlert | null>(null);
   const [showAlertModal, setShowAlertModal] = useState<boolean>(false);
 
+  // Live real-time telemetry stream from shared Telemetry Store
+  const snapshot = useTelemetrySnapshot();
+
   const driftAlerts = analyzePhysiologicalDrift(historyRecords, profile);
 
-  // Active biometrics with nominal fallbacks exactly matching 01_dashboard.png
-  const v = latestAssessment?.values || {
-    heartRate: 72,
-    systolic: 118,
-    diastolic: 76,
-    bloodSugar: 92,
-    bodyTemperature: 36.6,
-    sleepDuration: 7.75, // 7h 45m
-    mood: 'good' as const,
+  // Live heart rate from the running 250 Hz simulation or device
+  const liveHr = snapshot.heartRate.value ?? latestAssessment?.values.heartRate ?? 72;
+  const liveBp = snapshot.bloodPressure.value ?? {
+    systolic: latestAssessment?.values.systolic ?? 118,
+    diastolic: latestAssessment?.values.diastolic ?? 76,
   };
+  const liveSugar = snapshot.bloodSugar.value ?? latestAssessment?.values.bloodSugar ?? 92;
+  const liveTemp = snapshot.bodyTemperature.value ?? latestAssessment?.values.bodyTemperature ?? 36.6;
+  const liveSleep = snapshot.sleepDuration.value ?? latestAssessment?.values.sleepDuration ?? 7.75;
 
-  const score = latestAssessment?.overall.score ?? 95;
-  const isHealthy = !latestAssessment || latestAssessment.overall.status === 'GREEN';
+  const score = latestAssessment?.overall.score ?? (snapshot.overallStatus === 'GREEN' ? 95 : 88);
+  const isHealthy = snapshot.overallStatus === 'GREEN';
 
   // Format sleep duration to "7h 45m"
-  const sleepHours = Math.floor(v.sleepDuration);
-  const sleepMins = Math.round((v.sleepDuration % 1) * 60);
+  const sleepHours = Math.floor(liveSleep);
+  const sleepMins = Math.round((liveSleep % 1) * 60);
   const sleepDisplay = `${sleepHours}h ${sleepMins > 0 ? `${sleepMins}m` : '00m'}`;
 
   return (
@@ -123,7 +118,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* ── Card 1: Health Score Circular Ring (md:col-span-3) ──────────── */}
         <div className="md:col-span-3 p-6 rounded-3xl bg-[#0c142c]/85 border border-[#1b2752] flex flex-col items-center justify-center gap-3 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-          {/* Subtle background glow */}
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
 
           {/* Glowing Circular Progress Ring */}
@@ -142,9 +136,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </feMerge>
                 </filter>
               </defs>
-              {/* Background track circle */}
               <circle cx="50" cy="50" r="40" fill="none" stroke="#131c38" strokeWidth="8" />
-              {/* Glowing animated progress stroke */}
               <circle
                 cx="50"
                 cy="50"
@@ -165,7 +157,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          {/* Title & Status */}
           <div className="text-center relative z-10">
             <h3 className="text-base font-bold text-white font-sans tracking-wide">Health Score</h3>
             <p className="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1.5 mt-1">
@@ -177,7 +168,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* ── Card 2: Overall Status with Glowing ECG (md:col-span-5) ─────── */}
         <div className="md:col-span-5 p-6 rounded-3xl bg-[#0c142c]/85 border border-[#1b2752] flex flex-col justify-between gap-5 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-          {/* Subtle background glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-transparent pointer-events-none" />
 
           <div className="space-y-3 relative z-10">
@@ -194,11 +184,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             <p className="text-xs sm:text-sm text-slate-300 font-sans">
-              {isHealthy ? 'All systems are nominal' : latestAssessment?.overall.summary}
+              {isHealthy ? 'All systems are nominal' : latestAssessment?.overall.summary || 'Resting cardiovascular elevation'}
             </p>
           </div>
 
-          {/* Glowing Green ECG Pulse Line (Exact 01_dashboard.png) */}
+          {/* Glowing Green ECG Pulse Line (matches 01_dashboard.png) */}
           <div className="w-full h-16 relative flex items-center z-10 my-1">
             <svg viewBox="0 0 320 44" className="w-full h-full" preserveAspectRatio="none">
               <defs>
@@ -232,7 +222,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* ── Card 3: Astronaut Hero Card (md:col-span-4) ──────────────────── */}
         {/* Featuring the user's uploaded 2nd image (/astronaut.jpg) */}
         <div className="md:col-span-4 rounded-3xl bg-[#0c142c]/85 border border-blue-500/30 overflow-hidden shadow-2xl relative flex items-center justify-center min-h-[230px] group">
-          {/* Subtle cosmic vignette & atmosphere */}
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-950/60 via-transparent to-transparent z-10 pointer-events-none" />
 
           {/* User's Astronaut Image */}
@@ -242,10 +231,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="w-full h-full object-cover object-top max-h-[250px] group-hover:scale-105 transition-transform duration-500 ease-out"
           />
 
-          {/* Bottom gradient fade for seamless integration */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#080d22] via-[#080d22]/70 to-transparent z-10 pointer-events-none" />
 
-          {/* Astronaut Mission Label */}
           <div className="absolute bottom-3 left-3.5 right-3.5 z-20 flex items-center justify-between">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#080d22]/80 border border-blue-500/30 text-cyan-300 backdrop-blur-md">
               ORION CREW • {profile.name}
@@ -255,16 +242,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       </div>
 
-      {/* ── 3. Middle Row: Vital Signs (Left) & Recent Alerts (Right) ───── */}
+      {/* ── 3. Live Hospital-Monitor Waveform Stream (PLAN.md Section 7 & 10) ── */}
+      <div className="w-full">
+        <LiveWaveform />
+      </div>
+
+      {/* ── 4. Middle Row: Vital Signs (Left) & Recent Alerts (Right) ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
         {/* ── Left: Vital Signs Card (lg:col-span-8) ──────────────────────── */}
         <div className="lg:col-span-8 p-6 rounded-3xl bg-[#0c142c]/85 border border-[#1b2752] shadow-2xl backdrop-blur-xl space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-extrabold text-white font-sans tracking-wide">
-              Vital Signs
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-white font-sans tracking-wide">
+                Vital Signs
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold">
+                STREAM SYNC ACTIVE
+              </span>
+            </div>
             <button
               onClick={onNavigateToOverview}
               className="text-xs text-blue-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition-colors"
@@ -277,17 +274,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* 5 Sub-cards in a Clean Row (Exact 01_dashboard.png) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
 
-            {/* 1. Heart Rate */}
+            {/* 1. Heart Rate (Live updating) */}
             <div
               onClick={() => latestAssessment && setModalRecord(latestAssessment)}
               className="p-4 rounded-2xl bg-[#070b1a] border border-[#172242] hover:border-rose-500/50 cursor-pointer transition-all flex flex-col justify-between group hover:scale-[1.02]"
             >
               <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center mb-3">
-                <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+                <Heart className="w-5 h-5 text-rose-500 fill-rose-500 animate-pulse" />
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-black text-white">{v.heartRate}</span>
+                  <span className="text-xl font-black text-white font-mono">{liveHr}</span>
                   <span className="text-xs text-slate-400 font-medium">bpm</span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-sans mt-1">Heart Rate</p>
@@ -304,7 +301,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-base font-black text-white">{v.systolic}/{v.diastolic}</span>
+                  <span className="text-base font-black text-white font-mono">{liveBp.systolic}/{liveBp.diastolic}</span>
                   <span className="text-[10px] text-slate-400 font-medium">mmHg</span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-sans mt-1">Blood Pressure</p>
@@ -321,14 +318,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-black text-white">{v.bloodSugar}</span>
+                  <span className="text-xl font-black text-white font-mono">{liveSugar}</span>
                   <span className="text-xs text-slate-400 font-medium">mg/dL</span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-sans mt-1">Blood Sugar</p>
               </div>
             </div>
 
-            {/* 4. Temperature */}
+            {/* 4. Temperature (Live subtle drift) */}
             <div
               onClick={() => latestAssessment && setModalRecord(latestAssessment)}
               className="p-4 rounded-2xl bg-[#070b1a] border border-[#172242] hover:border-amber-500/50 cursor-pointer transition-all flex flex-col justify-between group hover:scale-[1.02]"
@@ -338,7 +335,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-black text-white">{v.bodyTemperature}</span>
+                  <span className="text-xl font-black text-white font-mono">{liveTemp}</span>
                   <span className="text-xs text-slate-400 font-medium">°C</span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-sans mt-1">Temperature</p>
@@ -355,7 +352,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-base font-black text-white">{sleepDisplay}</span>
+                  <span className="text-base font-black text-white font-mono">{sleepDisplay}</span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-sans mt-1">Sleep</p>
               </div>
@@ -406,7 +403,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button>
           ) : (
             <div className="pt-2 border-t border-[#1b2752]/60 flex items-center justify-between text-[11px] font-mono text-slate-500">
-              <span>Telemetry Uplink: Nominal</span>
+              <span>Telemetry Uplink: Active</span>
               <span className="text-emerald-400">DSN SYNC 100%</span>
             </div>
           )}
@@ -414,7 +411,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       </div>
 
-      {/* ── 4. Bottom Callout & Earth Horizon Curve (Exact 01_dashboard.png) ── */}
+      {/* ── 5. Bottom Callout & Earth Horizon Curve (Exact 01_dashboard.png) ── */}
       <div className="relative pt-6 pb-4 flex flex-col items-center justify-center overflow-hidden">
         {/* Glowing Earth atmosphere curvature in the background */}
         <div className="absolute -bottom-48 w-[800px] sm:w-[1200px] h-[340px] rounded-[100%] bg-gradient-to-t from-blue-600/30 via-cyan-500/15 to-transparent blur-3xl pointer-events-none" />
@@ -427,7 +424,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </p>
       </div>
 
-      {/* ── 5. Flight Surgeon SBAR Communication Modal (Abdul Rafay Phase 2) ── */}
+      {/* ── 6. Flight Surgeon SBAR Communication Modal (Abdul Rafay Phase 2) ── */}
       {selectedSbarAlert && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-[#0b1228] border border-cyan-500/40 p-6 space-y-4 shadow-2xl">
@@ -486,7 +483,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
-      {/* ── 6. Notification Center Modal ─────────────────────────────────── */}
+      {/* ── 7. Notification Center Modal ─────────────────────────────────── */}
       {showAlertModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[#0b1228] border border-cyan-500/40 p-6 space-y-4 shadow-2xl">
@@ -535,7 +532,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
-      {/* ── 7. Assessment Detail Modal ───────────────────────────────────── */}
+      {/* ── 8. Assessment Detail Modal ───────────────────────────────────── */}
       <AssessmentDetailModal
         record={modalRecord}
         isOpen={!!modalRecord}
