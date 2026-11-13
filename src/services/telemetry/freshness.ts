@@ -59,3 +59,4 @@ export function classifyHeartRate(bpm: number | null, quality: Quality): 'GREEN'
   if (bpm >= green.min && bpm <= green.max) return 'GREEN';
   return 'UNKNOWN';
 }
+

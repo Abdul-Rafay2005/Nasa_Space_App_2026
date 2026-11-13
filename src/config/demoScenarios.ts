@@ -72,3 +72,4 @@ export const DEMO_SCENARIOS: Record<string, DemoScenario> = {
     expectedStatus: 'GREEN',
   },
 };
+

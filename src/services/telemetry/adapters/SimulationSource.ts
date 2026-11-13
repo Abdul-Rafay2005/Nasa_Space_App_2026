@@ -340,3 +340,4 @@ export class SimulationSource implements TelemetrySource {
     this.notify({ type: 'measurement', measurement: tempMeasurement });
   }
 }
+

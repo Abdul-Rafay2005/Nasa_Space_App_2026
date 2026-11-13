@@ -9,3 +9,4 @@
 - **Reference Rate:** 72 BPM nominal baseline (RR interval ~833 ms)
 - **Intended Use:** Non-clinical engineering and visual demonstration for the NASA Space Apps Challenge 2026.
 - **Verification:** Continuous isoelectric endpoints at 0.0 a.u. for artifact-free concatenation.
+

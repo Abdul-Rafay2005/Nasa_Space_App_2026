@@ -26,7 +26,8 @@ export type NavigationPage =
   | 'guidance'
   | 'routine'
   | 'history'
-  | 'overview';
+  | 'overview'
+  | 'sources';
 
 interface SidebarProps {
   currentPage: NavigationPage;
@@ -128,11 +129,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Settings button */}
         <div className="px-3 pb-2">
           <button
-            onClick={() => alert('Mission Telemetry Settings: System nominal. Encryption AES-256 GCM active.')}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-[#111c3d]/60 transition-colors"
+            onClick={() => handleItemClick('sources')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-colors ${
+              currentPage === 'sources'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#111c3d]/60'
+            }`}
           >
-            <Settings className="w-4 h-4 text-slate-400" />
-            <span>Settings</span>
+            <Settings className="w-4 h-4" />
+            <span>Sources & Settings</span>
           </button>
         </div>
 

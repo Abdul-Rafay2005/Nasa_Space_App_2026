@@ -51,3 +51,4 @@ export function useTelemetryControls() {
     ringBuffer: telemetryController.getRingBuffer(),
   };
 }
+

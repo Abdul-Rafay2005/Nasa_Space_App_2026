@@ -88,3 +88,4 @@ export class WaveformRingBuffer {
     return { values: outValues, times: outTimes, gaps: outGaps, length: n };
   }
 }
+

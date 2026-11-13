@@ -152,3 +152,4 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
     />
   );
 };
+

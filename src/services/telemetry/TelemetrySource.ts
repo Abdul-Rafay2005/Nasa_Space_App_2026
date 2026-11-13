@@ -22,3 +22,4 @@ export interface TelemetrySource {
   subscribe(listener: TelemetryEventListener): () => void;
   dispose(): void;
 }
+

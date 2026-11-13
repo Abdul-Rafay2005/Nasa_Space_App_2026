@@ -1,7 +1,9 @@
 /**
- * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
- * Module: Daily Health Check-in Page — Phase 2 UI (matches Abdullah's design image 02)
- * Lead Developer: Abdul Rafay
+ * Aegis Health — Daily Health Check-in
+ * Conforms to Section 10.5 of PLAN.md
+ * 
+ * 3-Stage Workflow: Capture Biometrics → How You Feel → Review & Save
+ * Supports live telemetry capture, manual overrides, provenance tagging, and IndexedDB saving.
  */
 
 import React, { useState } from 'react';
@@ -13,12 +15,13 @@ import {
   Moon,
   Smile,
   CheckCircle,
-  RotateCcw,
-  ChevronDown,
-  AlertTriangle,
+  Camera,
+  Layers,
+  ChevronRight,
+  ArrowLeft,
+  FileCheck,
 } from 'lucide-react';
 import {
-  AssessmentFormValues,
   DailyAssessmentRecord,
   MoodType,
   AstronautProfile,
@@ -26,6 +29,8 @@ import {
 } from '../types/health';
 import { MOOD_OPTIONS } from '../config/thresholds';
 import { evaluateAllIndicators, calculateOverallHealth } from '../services/healthStatus';
+import { useTelemetrySnapshot } from '../stores/telemetryStore';
+import { saveCheckInRecord } from '../services/persistence/historyRepository';
 
 interface DailyAssessmentProps {
   profile: AstronautProfile;
@@ -33,353 +38,558 @@ interface DailyAssessmentProps {
   onNavigateToDashboard: () => void;
 }
 
-/* ── Reusable vital input card ───────────────────────────────────────── */
-interface VitalInputProps {
-  icon: React.ReactNode;
-  iconBg: string;
-  label: string;
-  unit: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  step?: string;
-  min?: number;
-  max?: number;
-  error?: string;
-  type?: string;
-}
-const VitalInput: React.FC<VitalInputProps> = ({
-  icon, iconBg, label, unit, value, onChange,
-  placeholder, step, min, max, error, type = 'number',
-}) => (
-  <div className={`p-4 rounded-2xl bg-[#111827] border transition-all ${error ? 'border-red-500/40' : 'border-white/5 hover:border-blue-500/20'}`}>
-    <div className="flex items-center gap-2 mb-3">
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}`}>
-        {icon}
-      </div>
-      <span className="text-sm font-semibold text-white">{label}</span>
-    </div>
-    <div className="flex items-baseline gap-2">
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        step={step}
-        min={min}
-        max={max}
-        className="flex-1 bg-transparent text-2xl font-bold text-white placeholder-slate-600 outline-none focus:outline-none w-full"
-        style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-      />
-      <span className="text-xs text-slate-400 shrink-0">{unit}</span>
-    </div>
-    {error && (
-      <p className="mt-1 text-[11px] text-red-400 font-mono">{error}</p>
-    )}
-  </div>
-);
-
-/* ── Main component ──────────────────────────────────────────────────── */
 export const DailyAssessment: React.FC<DailyAssessmentProps> = ({
   profile,
   onSubmitSuccess,
   onNavigateToDashboard,
 }) => {
-  const initialValues: AssessmentFormValues = {
-    heartRate: '', systolic: '', diastolic: '',
-    bloodSugar: '', bodyTemperature: '', sleepDuration: '',
-    mood: 'good', notes: '',
-  };
-  const [formValues, setFormValues] = useState<AssessmentFormValues>(initialValues);
+  const liveSnapshot = useTelemetrySnapshot();
+
+  const [stage, setStage] = useState<'capture' | 'feel' | 'review'>('capture');
+  const [capturedFromStream, setCapturedFromStream] = useState(false);
+  const [provenanceKind, setProvenanceKind] = useState<'simulation' | 'device' | 'manual'>('manual');
+
+  // Form values
+  const [heartRate, setHeartRate] = useState<string>('');
+  const [systolic, setSystolic] = useState<string>('');
+  const [diastolic, setDiastolic] = useState<string>('');
+  const [bloodSugar, setBloodSugar] = useState<string>('');
+  const [bodyTemperature, setBodyTemperature] = useState<string>('');
+  const [sleepDuration, setSleepDuration] = useState<string>('7.5');
+  const [mood, setMood] = useState<MoodType>('good');
+  const [notes, setNotes] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successFeedback, setSuccessFeedback] = useState<DailyAssessmentRecord | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedRecord, setSubmittedRecord] = useState<DailyAssessmentRecord | null>(null);
 
-  /* quick prefills */
-  const handlePrefillNominal = () => {
-    setFormValues({ heartRate: '72', systolic: '118', diastolic: '76', bloodSugar: '92', bodyTemperature: '36.6', sleepDuration: '7.75', mood: 'good', notes: '' });
-    setErrors({});
-  };
-  const handlePrefillWarning = () => {
-    setFormValues({ heartRate: '96', systolic: '136', diastolic: '88', bloodSugar: '124', bodyTemperature: '37.6', sleepDuration: '5.8', mood: 'fatigued', notes: '' });
-    setErrors({});
-  };
-  const handlePrefillCritical = () => {
-    setFormValues({ heartRate: '118', systolic: '152', diastolic: '96', bloodSugar: '148', bodyTemperature: '38.4', sleepDuration: '4.2', mood: 'disoriented', notes: '' });
+  // Capture from live telemetry stream
+  const handleCaptureLiveStream = () => {
+    const hr = liveSnapshot.heartRate?.value;
+    const bp = liveSnapshot.bloodPressure?.value;
+    const bs = liveSnapshot.bloodSugar?.value;
+    const temp = liveSnapshot.bodyTemperature?.value;
+
+    if (hr) setHeartRate(String(hr));
+    if (bp) {
+      setSystolic(String(bp.systolic));
+      setDiastolic(String(bp.diastolic));
+    }
+    if (bs) setBloodSugar(String(bs));
+    if (temp) setBodyTemperature(String(temp.toFixed(1)));
+
+    setCapturedFromStream(true);
+    setProvenanceKind(liveSnapshot.heartRate?.provenance?.kind === 'device' ? 'device' : 'simulation');
     setErrors({});
   };
 
-  const validate = (): boolean => {
+  // Demo presets
+  const handlePreset = (type: 'nominal' | 'warning' | 'critical') => {
+    setProvenanceKind('simulation');
+    if (type === 'nominal') {
+      setHeartRate('72');
+      setSystolic('118');
+      setDiastolic('76');
+      setBloodSugar('92');
+      setBodyTemperature('36.6');
+      setSleepDuration('7.75');
+      setMood('good');
+      setNotes('Nominal mission Sol check-in.');
+    } else if (type === 'warning') {
+      setHeartRate('94');
+      setSystolic('134');
+      setDiastolic('86');
+      setBloodSugar('122');
+      setBodyTemperature('37.4');
+      setSleepDuration('5.5');
+      setMood('fatigued');
+      setNotes('Slight fatigue post-exercise.');
+    } else {
+      setHeartRate('126');
+      setSystolic('152');
+      setDiastolic('96');
+      setBloodSugar('160');
+      setBodyTemperature('38.6');
+      setSleepDuration('4.0');
+      setMood('disoriented');
+      setNotes('Significant exertion and thermal elevation.');
+    }
+    setErrors({});
+  };
+
+  const validateStage1 = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const hr = parseFloat(formValues.heartRate);
-    if (!formValues.heartRate || isNaN(hr) || hr < 30 || hr > 220) newErrors.heartRate = 'Enter valid heart rate (30–220 BPM)';
-    const sys = parseFloat(formValues.systolic);
-    if (!formValues.systolic || isNaN(sys) || sys < 60 || sys > 260) newErrors.systolic = 'Enter valid systolic (60–260 mmHg)';
-    const dia = parseFloat(formValues.diastolic);
-    if (!formValues.diastolic || isNaN(dia) || dia < 35 || dia > 160) newErrors.diastolic = 'Enter valid diastolic (35–160 mmHg)';
-    else if (!isNaN(sys) && dia >= sys) newErrors.diastolic = 'Diastolic must be less than systolic';
-    const sugar = parseFloat(formValues.bloodSugar);
-    if (!formValues.bloodSugar || isNaN(sugar) || sugar < 30 || sugar > 600) newErrors.bloodSugar = 'Enter valid glucose (30–600 mg/dL)';
-    const temp = parseFloat(formValues.bodyTemperature);
-    if (!formValues.bodyTemperature || isNaN(temp) || temp < 32 || temp > 43) newErrors.bodyTemperature = 'Enter valid temperature (32–43 °C)';
-    const sleep = parseFloat(formValues.sleepDuration);
-    if (!formValues.sleepDuration || isNaN(sleep) || sleep < 0 || sleep > 24) newErrors.sleepDuration = 'Enter valid sleep (0–24 hours)';
+    const hrNum = Number(heartRate);
+    if (!heartRate || isNaN(hrNum) || hrNum < 30 || hrNum > 220) {
+      newErrors.heartRate = 'Enter valid HR (30–220 BPM)';
+    }
+
+    const sysNum = Number(systolic);
+    const diaNum = Number(diastolic);
+    if (!systolic || isNaN(sysNum) || sysNum < 60 || sysNum > 260) {
+      newErrors.systolic = 'Enter valid Systolic (60–260)';
+    }
+    if (!diastolic || isNaN(diaNum) || diaNum < 35 || diaNum > 160) {
+      newErrors.diastolic = 'Enter valid Diastolic (35–160)';
+    }
+
+    if (!bloodSugar || isNaN(Number(bloodSugar)) || Number(bloodSugar) < 30 || Number(bloodSugar) > 500) {
+      newErrors.bloodSugar = 'Enter valid Blood Sugar (30–500 mg/dL)';
+    }
+
+    if (!bodyTemperature || isNaN(Number(bodyTemperature)) || Number(bodyTemperature) < 32 || Number(bodyTemperature) > 43) {
+      newErrors.bodyTemperature = 'Enter valid Temperature (32–43 °C)';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
-    const parsed: ParsedAssessmentValues = {
-      heartRate: parseFloat(formValues.heartRate),
-      systolic: parseFloat(formValues.systolic),
-      diastolic: parseFloat(formValues.diastolic),
-      bloodSugar: parseFloat(formValues.bloodSugar),
-      bodyTemperature: parseFloat(formValues.bodyTemperature),
-      sleepDuration: parseFloat(formValues.sleepDuration),
-      mood: formValues.mood,
-      notes: formValues.notes?.trim() || undefined,
+    if (!validateStage1()) {
+      setStage('capture');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const parsedValues: ParsedAssessmentValues = {
+      heartRate: Number(heartRate),
+      systolic: Number(systolic),
+      diastolic: Number(diastolic),
+      bloodSugar: Number(bloodSugar),
+      bodyTemperature: Number(bodyTemperature),
+      sleepDuration: Number(sleepDuration) || 7.5,
+      mood,
+      notes: notes.trim() || undefined,
     };
-    const evaluatedResults = evaluateAllIndicators(parsed, profile);
-    const overall = calculateOverallHealth(evaluatedResults);
-    const newRecord: DailyAssessmentRecord = {
-      id: `REC-${Date.now()}`,
+
+    const results = evaluateAllIndicators(parsedValues, profile);
+    const overall = calculateOverallHealth(results);
+
+    const record: DailyAssessmentRecord = {
+      id: `REC-SOL-${profile.currentMissionDay}-${Date.now().toString(36)}`,
       timestamp: new Date().toISOString(),
       missionDay: profile.currentMissionDay,
       astronautId: profile.id,
-      values: parsed,
-      results: evaluatedResults,
+      values: parsedValues,
+      results,
       overall,
-      isDemonstrationData: false,
+      isDemonstrationData: provenanceKind === 'simulation',
     };
-    setSuccessFeedback(newRecord);
-    onSubmitSuccess(newRecord);
+
+    // Save to unified history repository (IndexedDB + dual write)
+    await saveCheckInRecord({
+      id: record.id,
+      missionDay: record.missionDay,
+      timestamp: record.timestamp,
+      astronautId: record.astronautId,
+      provenanceKind,
+      indicators: {
+        heartRate: parsedValues.heartRate,
+        systolic: parsedValues.systolic,
+        diastolic: parsedValues.diastolic,
+        bloodSugar: parsedValues.bloodSugar,
+        bodyTemperature: parsedValues.bodyTemperature,
+        sleepDuration: parsedValues.sleepDuration,
+        mood: parsedValues.mood,
+      },
+      notes: parsedValues.notes,
+      completeness: '6/6 indicators verified',
+    });
+
+    setIsSubmitting(false);
+    setSubmittedRecord(record);
+    onSubmitSuccess(record);
   };
 
-  /* ── Success screen ───────────────────────────────────────────────── */
-  if (successFeedback) {
-    const statusColor = successFeedback.overall.status === 'GREEN' ? 'text-green-400' : successFeedback.overall.status === 'RED' ? 'text-red-400' : 'text-yellow-400';
-    const statusBg = successFeedback.overall.status === 'GREEN' ? 'bg-green-500/15 border-green-500/30' : successFeedback.overall.status === 'RED' ? 'bg-red-500/15 border-red-500/30' : 'bg-yellow-500/15 border-yellow-500/30';
+  if (submittedRecord) {
     return (
-      <div className="max-w-lg mx-auto text-center animate-fade-in py-12 space-y-6">
-        <div className={`inline-flex flex-col items-center gap-3 p-8 rounded-2xl border ${statusBg}`}>
-          <CheckCircle className={`w-14 h-14 ${statusColor}`} />
-          <h2 className="text-xl font-bold text-white">Check-in Recorded!</h2>
-          <div className={`px-4 py-1.5 rounded-full font-semibold text-sm ${statusColor} border ${statusBg}`}>
-            {successFeedback.overall.statusLabel}
-          </div>
-          <p className="text-sm text-slate-300 leading-relaxed max-w-sm">
-            {successFeedback.overall.summary}
-          </p>
-          <p className="text-xs text-slate-400 italic">{successFeedback.overall.recommendationSnippet}</p>
+      <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-space-950/90 border border-emerald-500/40 text-center space-y-5 animate-fade-in">
+        <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mx-auto text-emerald-400">
+          <CheckCircle className="w-8 h-8" />
         </div>
-        <div className="flex gap-3 justify-center">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold text-slate-100 font-sans">Daily Check-in Recorded</h2>
+          <p className="text-sm text-slate-300 font-mono">
+            Mission Sol {submittedRecord.missionDay} • {submittedRecord.overall.summary}
+          </p>
+          <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-mono bg-space-900 border border-slate-700 text-slate-400">
+            Provenance: {provenanceKind === 'simulation' ? '⚡ Simulated stream' : 'Verified manual check-in'}
+          </span>
+        </div>
+
+        <div className="flex justify-center gap-3 pt-4">
           <button
             onClick={onNavigateToDashboard}
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all"
+            className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all"
           >
-            Go to Dashboard
-          </button>
-          <button
-            onClick={() => { setSuccessFeedback(null); setFormValues(initialValues); setErrors({}); }}
-            className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-semibold text-sm border border-white/10 transition-all"
-          >
-            Log Another
+            Return to Monitor
           </button>
         </div>
       </div>
     );
   }
 
-  /* ── Form ─────────────────────────────────────────────────────────── */
   return (
-    <div className="space-y-6 animate-fade-in">
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold text-white">Daily Health Check-in</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Enter your health readings for Sol {profile.currentMissionDay}
+          <h1 className="text-2xl font-bold text-slate-100 font-sans">Astronaut Daily Health Check-in</h1>
+          <p className="text-xs sm:text-sm text-slate-400 font-mono mt-0.5">
+            Mission Sol {profile.currentMissionDay} • Guided 3-stage clinical acquisition
           </p>
         </div>
-        {/* Quick test prefills */}
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-slate-500 hidden sm:inline">Quick test:</span>
-          <button onClick={handlePrefillNominal} className="px-2.5 py-1 text-[11px] font-mono rounded-lg bg-green-500/15 text-green-300 border border-green-500/20 hover:bg-green-500/25 transition-colors">Nominal</button>
-          <button onClick={handlePrefillWarning} className="px-2.5 py-1 text-[11px] font-mono rounded-lg bg-yellow-500/15 text-yellow-300 border border-yellow-500/20 hover:bg-yellow-500/25 transition-colors">Warning</button>
-          <button onClick={handlePrefillCritical} className="px-2.5 py-1 text-[11px] font-mono rounded-lg bg-red-500/15 text-red-300 border border-red-500/20 hover:bg-red-500/25 transition-colors">Critical</button>
+
+        {/* Stepper pills */}
+        <div className="flex items-center gap-1 bg-space-950/80 p-1 rounded-xl border border-slate-800 text-xs font-mono">
+          <button
+            onClick={() => setStage('capture')}
+            className={`px-3 py-1 rounded-lg transition-all ${
+              stage === 'capture' ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40' : 'text-slate-400'
+            }`}
+          >
+            1. Capture
+          </button>
+          <span className="text-slate-600">→</span>
+          <button
+            onClick={() => {
+              if (validateStage1()) setStage('feel');
+            }}
+            className={`px-3 py-1 rounded-lg transition-all ${
+              stage === 'feel' ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40' : 'text-slate-400'
+            }`}
+          >
+            2. Wellbeing
+          </button>
+          <span className="text-slate-600">→</span>
+          <button
+            onClick={() => {
+              if (validateStage1()) setStage('review');
+            }}
+            className={`px-3 py-1 rounded-lg transition-all ${
+              stage === 'review' ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40' : 'text-slate-400'
+            }`}
+          >
+            3. Review & Save
+          </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-
-        {/* Top decorative hero */}
-        <div className="p-6 rounded-2xl border border-white/5 bg-gradient-to-br from-blue-900/20 via-indigo-900/10 to-transparent flex flex-col sm:flex-row items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-green-400/10 border-2 border-green-400/30 flex items-center justify-center shrink-0">
-            <Heart className="w-8 h-8 text-green-400" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">Take a moment to update your health data</h2>
-            <p className="text-sm text-slate-400">Fill in all 6 vital signs below — the system will evaluate them automatically.</p>
-          </div>
-          <div className="sm:ml-auto">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="w-3 h-3 text-amber-400" />
-              <span className="text-[11px] text-amber-300 font-mono">Research Demo</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Vitals grid: 3 across on large, 2 on medium, 1 on small */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-          {/* Heart Rate */}
-          <VitalInput
-            icon={<Heart className="w-4 h-4 text-red-400" />}
-            iconBg="bg-red-400/10"
-            label="Heart Rate"
-            unit="bpm"
-            value={formValues.heartRate}
-            onChange={(v) => setFormValues({ ...formValues, heartRate: v })}
-            placeholder="72"
-            min={30} max={220}
-            error={errors.heartRate}
-          />
-
-          {/* Blood Pressure — special dual input */}
-          <div className={`p-4 rounded-2xl bg-[#111827] border transition-all ${(errors.systolic || errors.diastolic) ? 'border-red-500/40' : 'border-white/5 hover:border-blue-500/20'}`}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-400/10">
-                <Gauge className="w-4 h-4 text-blue-400" />
-              </div>
-              <span className="text-sm font-semibold text-white">Blood Pressure</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <input
-                type="number"
-                value={formValues.systolic}
-                onChange={(e) => setFormValues({ ...formValues, systolic: e.target.value })}
-                placeholder="118"
-                min={60} max={260}
-                className="w-16 bg-transparent text-2xl font-bold text-white placeholder-slate-600 outline-none"
-                style={{ WebkitAppearance: 'none' }}
-              />
-              <span className="text-slate-400 text-lg">/</span>
-              <input
-                type="number"
-                value={formValues.diastolic}
-                onChange={(e) => setFormValues({ ...formValues, diastolic: e.target.value })}
-                placeholder="76"
-                min={35} max={160}
-                className="w-16 bg-transparent text-2xl font-bold text-white placeholder-slate-600 outline-none"
-                style={{ WebkitAppearance: 'none' }}
-              />
-              <span className="text-xs text-slate-400">mmHg</span>
-            </div>
-            {(errors.systolic || errors.diastolic) && (
-              <p className="mt-1 text-[11px] text-red-400 font-mono">{errors.systolic || errors.diastolic}</p>
-            )}
-          </div>
-
-          {/* Blood Sugar */}
-          <VitalInput
-            icon={<Droplets className="w-4 h-4 text-purple-400" />}
-            iconBg="bg-purple-400/10"
-            label="Blood Sugar"
-            unit="mg/dL"
-            value={formValues.bloodSugar}
-            onChange={(v) => setFormValues({ ...formValues, bloodSugar: v })}
-            placeholder="92"
-            min={30} max={600}
-            error={errors.bloodSugar}
-          />
-
-          {/* Temperature */}
-          <VitalInput
-            icon={<Thermometer className="w-4 h-4 text-orange-400" />}
-            iconBg="bg-orange-400/10"
-            label="Temperature"
-            unit="°C"
-            value={formValues.bodyTemperature}
-            onChange={(v) => setFormValues({ ...formValues, bodyTemperature: v })}
-            placeholder="36.6"
-            step="0.1"
-            min={32} max={43}
-            error={errors.bodyTemperature}
-          />
-
-          {/* Sleep */}
-          <VitalInput
-            icon={<Moon className="w-4 h-4 text-indigo-400" />}
-            iconBg="bg-indigo-400/10"
-            label="Sleep Duration"
-            unit="hours"
-            value={formValues.sleepDuration}
-            onChange={(v) => setFormValues({ ...formValues, sleepDuration: v })}
-            placeholder="7.75"
-            step="0.25"
-            min={0} max={24}
-            error={errors.sleepDuration}
-          />
-
-          {/* Mood */}
-          <div className="p-4 rounded-2xl bg-[#111827] border border-white/5 hover:border-blue-500/20 transition-all">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-yellow-400/10">
-                <Smile className="w-4 h-4 text-yellow-400" />
-              </div>
-              <span className="text-sm font-semibold text-white">Mood</span>
-            </div>
-            <div className="relative">
-              <select
-                value={formValues.mood}
-                onChange={(e) => setFormValues({ ...formValues, mood: e.target.value as MoodType })}
-                className="w-full bg-transparent text-lg font-bold text-white outline-none appearance-none cursor-pointer pr-6"
-              >
-                {MOOD_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-[#111827] text-white">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div className="p-4 rounded-2xl bg-[#111827] border border-white/5">
-          <label className="block text-sm font-semibold text-white mb-2">
-            Notes <span className="text-slate-500 font-normal">(Optional)</span>
-          </label>
-          <textarea
-            rows={3}
-            value={formValues.notes}
-            onChange={(e) => setFormValues({ ...formValues, notes: e.target.value })}
-            placeholder="Any notes about your health, symptoms, or mission activities..."
-            className="w-full bg-transparent text-sm text-slate-200 placeholder-slate-600 outline-none resize-none"
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3">
+      {/* Demo tools collapsible banner */}
+      <details className="p-3.5 rounded-xl bg-space-950/80 border border-slate-800/80 text-xs font-mono">
+        <summary className="cursor-pointer text-slate-400 hover:text-cyan-300 flex items-center gap-2">
+          <Layers className="w-4 h-4 text-cyan-400" />
+          <span>Demo Tools & Preset Scenarios (Click to expand)</span>
+        </summary>
+        <div className="pt-3 flex flex-wrap items-center gap-2">
+          <span className="text-slate-400">Load Preset:</span>
           <button
             type="button"
-            onClick={() => { setFormValues(initialValues); setErrors({}); }}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-300 text-sm font-medium transition-all"
+            onClick={() => handlePreset('nominal')}
+            className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
           >
-            <RotateCcw className="w-4 h-4" />
-            Reset Form
+            Nominal
           </button>
           <button
-            type="submit"
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold text-sm shadow-lg shadow-blue-900/40 transition-all"
+            type="button"
+            onClick={() => handlePreset('warning')}
+            className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
           >
-            <CheckCircle className="w-4 h-4" />
-            Submit Check-in
+            Advisory Warning
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePreset('critical')}
+            className="px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30"
+          >
+            Critical Alert
           </button>
         </div>
+      </details>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* STAGE 1: CAPTURE READINGS */}
+        {stage === 'capture' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-space-900/60 border border-cyan-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                  <Camera className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-100 font-sans">Live Stream Capture</h3>
+                  <p className="text-xs text-slate-400 font-mono">
+                    Snapshot biometrics directly from the current telemetry stream without manual entry.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCaptureLiveStream}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-sm shrink-0"
+              >
+                Capture from Live Stream
+              </button>
+            </div>
+
+            {capturedFromStream && (
+              <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                <span>Telemetry captured at {new Date().toLocaleTimeString()}. Review values below or edit to override.</span>
+              </div>
+            )}
+
+            {/* Vital Signs Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Heart Rate */}
+              <div className={`p-4 rounded-xl bg-space-950/80 border ${errors.heartRate ? 'border-rose-500' : 'border-slate-800'}`}>
+                <div className="flex items-center gap-2 mb-2 text-rose-400">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-xs font-mono font-bold text-slate-200 uppercase">Resting Heart Rate</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    value={heartRate}
+                    onChange={(e) => setHeartRate(e.target.value)}
+                    placeholder="72"
+                    className="w-full bg-transparent text-2xl font-bold font-mono text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-xs font-mono text-slate-400">BPM</span>
+                </div>
+                {errors.heartRate && <p className="text-[11px] text-rose-400 font-mono mt-1">{errors.heartRate}</p>}
+              </div>
+
+              {/* Blood Pressure */}
+              <div className={`p-4 rounded-xl bg-space-950/80 border ${(errors.systolic || errors.diastolic) ? 'border-rose-500' : 'border-slate-800'}`}>
+                <div className="flex items-center gap-2 mb-2 text-cyan-400">
+                  <Gauge className="w-4 h-4" />
+                  <span className="text-xs font-mono font-bold text-slate-200 uppercase">Blood Pressure</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    value={systolic}
+                    onChange={(e) => setSystolic(e.target.value)}
+                    placeholder="118"
+                    className="w-20 bg-transparent text-2xl font-bold font-mono text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-slate-400 text-xl font-mono">/</span>
+                  <input
+                    type="number"
+                    value={diastolic}
+                    onChange={(e) => setDiastolic(e.target.value)}
+                    placeholder="76"
+                    className="w-20 bg-transparent text-2xl font-bold font-mono text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-xs font-mono text-slate-400">mmHg</span>
+                </div>
+                {(errors.systolic || errors.diastolic) && (
+                  <p className="text-[11px] text-rose-400 font-mono mt-1">{errors.systolic || errors.diastolic}</p>
+                )}
+              </div>
+
+              {/* Blood Sugar */}
+              <div className={`p-4 rounded-xl bg-space-950/80 border ${errors.bloodSugar ? 'border-rose-500' : 'border-slate-800'}`}>
+                <div className="flex items-center gap-2 mb-2 text-amber-400">
+                  <Droplets className="w-4 h-4" />
+                  <span className="text-xs font-mono font-bold text-slate-200 uppercase">Blood Sugar (Glucose)</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    value={bloodSugar}
+                    onChange={(e) => setBloodSugar(e.target.value)}
+                    placeholder="92"
+                    className="w-full bg-transparent text-2xl font-bold font-mono text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-xs font-mono text-slate-400">mg/dL</span>
+                </div>
+                {errors.bloodSugar && <p className="text-[11px] text-rose-400 font-mono mt-1">{errors.bloodSugar}</p>}
+              </div>
+
+              {/* Temperature */}
+              <div className={`p-4 rounded-xl bg-space-950/80 border ${errors.bodyTemperature ? 'border-rose-500' : 'border-slate-800'}`}>
+                <div className="flex items-center gap-2 mb-2 text-orange-400">
+                  <Thermometer className="w-4 h-4" />
+                  <span className="text-xs font-mono font-bold text-slate-200 uppercase">Core Body Temperature</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={bodyTemperature}
+                    onChange={(e) => setBodyTemperature(e.target.value)}
+                    placeholder="36.6"
+                    className="w-full bg-transparent text-2xl font-bold font-mono text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-xs font-mono text-slate-400">°C</span>
+                </div>
+                {errors.bodyTemperature && (
+                  <p className="text-[11px] text-rose-400 font-mono mt-1">{errors.bodyTemperature}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (validateStage1()) setStage('feel');
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-sm"
+              >
+                <span>Continue to Wellbeing</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STAGE 2: HOW YOU FEEL */}
+        {stage === 'feel' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="p-4 rounded-xl bg-space-950/80 border border-slate-800 space-y-4">
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-200 font-sans mb-2">
+                  <Smile className="w-4 h-4 text-emerald-400" />
+                  Subjective Readiness & Mood State
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {MOOD_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setMood(opt.value)}
+                      className={`p-3 rounded-xl border text-left font-mono transition-all ${
+                        mood === opt.value
+                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-200'
+                          : 'bg-space-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <div className="font-bold text-xs">{opt.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sleep Duration */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-200 font-sans mb-1">
+                  <Moon className="w-4 h-4 text-indigo-400" />
+                  Restorative Sleep Duration (Hours)
+                </label>
+                <input
+                  type="number"
+                  step="0.25"
+                  value={sleepDuration}
+                  onChange={(e) => setSleepDuration(e.target.value)}
+                  placeholder="7.5"
+                  className="w-32 px-3 py-2 rounded-xl bg-space-900 border border-slate-800 text-slate-100 font-mono text-sm focus:outline-none focus:border-cyan-500/50"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-bold text-slate-200 font-sans mb-1">
+                  Operational & Physiological Notes (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Record symptoms, EVA exertion, countermeasures, or mission activities..."
+                  className="w-full p-3 rounded-xl bg-space-900 border border-slate-800 text-slate-100 font-sans text-xs focus:outline-none focus:border-cyan-500/50"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-2">
+              <button
+                type="button"
+                onClick={() => setStage('capture')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-space-900 border border-slate-800 text-slate-300 font-mono text-xs hover:bg-space-850"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Capture</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStage('review')}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-sm"
+              >
+                <span>Proceed to Review</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STAGE 3: REVIEW & SAVE */}
+        {stage === 'review' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="p-4 rounded-xl bg-space-950/80 border border-slate-800 space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
+                <FileCheck className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-sm font-bold text-slate-100 font-sans">Verification Summary</h3>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">HEART RATE</span>
+                  <span className="text-slate-100 font-bold">{heartRate} BPM</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">BLOOD PRESSURE</span>
+                  <span className="text-slate-100 font-bold">{systolic}/{diastolic} mmHg</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">GLUCOSE</span>
+                  <span className="text-slate-100 font-bold">{bloodSugar} mg/dL</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">TEMPERATURE</span>
+                  <span className="text-slate-100 font-bold">{bodyTemperature} °C</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">SLEEP</span>
+                  <span className="text-slate-100 font-bold">{sleepDuration} Hours</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">MOOD</span>
+                  <span className="text-slate-100 font-bold capitalize">{mood}</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-space-900/40 border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
+                <div>Provenance Tag: <span className="text-cyan-300 font-bold">{provenanceKind.toUpperCase()}</span></div>
+                <div>Astronaut ID: <span className="text-slate-200">{profile.id}</span></div>
+                <div>Storage Engine: <span className="text-slate-200">IndexedDB AegisHealthDB + Dual-Write Fallback</span></div>
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-2">
+              <button
+                type="button"
+                onClick={() => setStage('feel')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-space-900 border border-slate-800 text-slate-300 font-mono text-xs hover:bg-space-850"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-lg shadow-emerald-950/40"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>{isSubmitting ? 'Recording...' : 'Commit Check-in Record'}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

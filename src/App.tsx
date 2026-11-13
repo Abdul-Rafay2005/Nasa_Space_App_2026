@@ -1,7 +1,7 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
  * Module: Root Application Component — Complete Integration
- * Lead Developer: Abdul Rafay | Visualization: Sameen | UI: Abdullah
+ * Compliant with PLAN.md Section 3.1 & 10
  */
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +14,10 @@ import { HealthOverview } from './pages/HealthOverview';
 import { TrendAnalyticsPage } from './pages/TrendAnalyticsPage';
 import { BodyMapPage } from './pages/BodyMapPage';
 import { FlightSurgeonGuidancePage } from './pages/FlightSurgeonGuidancePage';
-import { FeaturePlaceholder } from './pages/Placeholders';
+import { MissionRoutinePage } from './pages/MissionRoutinePage';
+import { SourcesPage } from './pages/SourcesPage';
+import { getCurrentRoute, navigateTo, subscribeToRoute, AppRoute } from './lib/navigation';
+import { runV1Migration } from './services/persistence/migrationV1';
 import {
   getStoredAssessments,
   saveAssessment,
@@ -24,17 +27,56 @@ import {
 } from './services/storage';
 import { AstronautProfile, DailyAssessmentRecord } from './types/health';
 
+const routeToNavPage = (r: AppRoute): NavigationPage => {
+  switch (r) {
+    case 'monitor': return 'dashboard';
+    case 'trends': return 'analytics';
+    case 'body': return 'body-map';
+    case 'check-in': return 'assessment';
+    case 'alerts': return 'guidance';
+    case 'routine': return 'routine';
+    case 'history': return 'history';
+    case 'overview': return 'overview';
+    case 'sources': return 'sources';
+    default: return 'dashboard';
+  }
+};
+
+const navPageToRoute = (p: NavigationPage): AppRoute => {
+  switch (p) {
+    case 'dashboard': return 'monitor';
+    case 'analytics': return 'trends';
+    case 'body-map': return 'body';
+    case 'assessment': return 'check-in';
+    case 'guidance': return 'alerts';
+    case 'routine': return 'routine';
+    case 'history': return 'history';
+    case 'overview': return 'overview';
+    case 'sources': return 'sources';
+    default: return 'monitor';
+  }
+};
+
 export const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<NavigationPage>('dashboard');
+  const [currentPage, setCurrentPage] = useState<NavigationPage>(() => routeToNavPage(getCurrentRoute()));
   const [profile, setProfile] = useState<AstronautProfile>(getAstronautProfile());
   const [records, setRecords] = useState<DailyAssessmentRecord[]>(getStoredAssessments());
   const [selectedBodyPartId, setSelectedBodyPartId] = useState<string | undefined>();
 
-  // Reload telemetry from storage
+  // Subscribe to browser hash changes (back/forward & direct links)
   useEffect(() => {
-    setProfile(getAstronautProfile());
-    setRecords(getStoredAssessments());
+    // Run idempotent IndexedDB migration on startup
+    runV1Migration().catch((err) => console.warn('[App] V1 migration warning:', err));
+
+    return subscribeToRoute((route) => {
+      setCurrentPage(routeToNavPage(route));
+    });
   }, []);
+
+  const handleSelectPage = (page: NavigationPage) => {
+    setCurrentPage(page);
+    navigateTo(navPageToRoute(page));
+  };
 
   const latestAssessment = records.length > 0 ? records[0] : undefined;
   const isCompletedToday = hasCompletedTodayAssessment(profile.currentMissionDay);
@@ -51,34 +93,34 @@ export const App: React.FC = () => {
       const resetRecords = resetToSampleData();
       setRecords(resetRecords);
       setProfile(getAstronautProfile());
-      setCurrentPage('dashboard');
+      handleSelectPage('dashboard');
     }
   };
 
   return (
     <AppLayout
       currentPage={currentPage}
-      onSelectPage={(page) => setCurrentPage(page)}
+      onSelectPage={handleSelectPage}
       astronautProfile={profile}
       onResetData={handleResetData}
     >
-      {/* 1. Master Dashboard */}
+      {/* 1. Master Dashboard & Live Telemetry Stream */}
       {currentPage === 'dashboard' && (
         <Dashboard
           profile={profile}
           latestAssessment={latestAssessment}
           historyRecords={records}
           isCompletedToday={isCompletedToday}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
-          onNavigateToHistory={() => setCurrentPage('history')}
-          onNavigateToOverview={() => setCurrentPage('overview')}
+          onNavigateToAssessment={() => handleSelectPage('assessment')}
+          onNavigateToHistory={() => handleSelectPage('history')}
+          onNavigateToOverview={() => handleSelectPage('overview')}
           onNavigateToBodyMap={(partId) => {
             setSelectedBodyPartId(partId);
-            setCurrentPage('body-map');
+            handleSelectPage('body-map');
           }}
-          onNavigateToAnalytics={() => setCurrentPage('analytics')}
-          onNavigateToGuidance={() => setCurrentPage('guidance')}
-          onNavigateToRoutine={() => setCurrentPage('routine')}
+          onNavigateToAnalytics={() => handleSelectPage('analytics')}
+          onNavigateToGuidance={() => handleSelectPage('guidance')}
+          onNavigateToRoutine={() => handleSelectPage('routine')}
         />
       )}
 
@@ -87,68 +129,70 @@ export const App: React.FC = () => {
         <DailyAssessment
           profile={profile}
           onSubmitSuccess={handleSubmitSuccess}
-          onNavigateToDashboard={() => setCurrentPage('dashboard')}
+          onNavigateToDashboard={() => handleSelectPage('dashboard')}
         />
       )}
 
-      {/* 3. Interactive Anatomical Body Map (Sameen) */}
+      {/* 3. Interactive Anatomical Body Map */}
       {currentPage === 'body-map' && (
         <BodyMapPage
           profile={profile}
           latestAssessment={latestAssessment}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
+          onNavigateToAssessment={() => handleSelectPage('assessment')}
           initialSelectedPartId={selectedBodyPartId}
         />
       )}
 
-      {/* 4. Dynamic Trend Analytics & Longitudinal Charts (Sameen) */}
+      {/* 4. Dynamic Trend Analytics & Longitudinal Charts */}
       {currentPage === 'analytics' && (
         <TrendAnalyticsPage
           profile={profile}
           records={records}
           onRecordsChange={(updated) => setRecords(updated)}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
+          onNavigateToAssessment={() => handleSelectPage('assessment')}
         />
       )}
 
-      {/* 5. Flight Surgeon Clinical Guidance & SBAR Decision Engine (Sameen & Abdul Rafay) */}
+      {/* 5. Flight Surgeon Clinical Guidance & SBAR Decision Engine */}
       {currentPage === 'guidance' && (
         <FlightSurgeonGuidancePage
           profile={profile}
           latestAssessment={latestAssessment}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
+          onNavigateToAssessment={() => handleSelectPage('assessment')}
           onNavigateToBodyMap={(partId) => {
             setSelectedBodyPartId(partId);
-            setCurrentPage('body-map');
+            handleSelectPage('body-map');
           }}
         />
       )}
 
       {/* 6. Mission Routine & Countermeasures Checklist */}
       {currentPage === 'routine' && (
-        <FeaturePlaceholder
-          pageId={currentPage}
-          onNavigateToDashboard={() => setCurrentPage('dashboard')}
-          records={records}
-          latestAssessment={latestAssessment}
+        <MissionRoutinePage
+          profile={profile}
         />
       )}
 
-      {/* 7. Health History Log Archive (Phase 1) */}
+      {/* 7. Health History Log Archive */}
       {currentPage === 'history' && (
         <HealthHistory
           records={records}
           onSelectRecord={() => {}}
-          onNavigateToAssessment={() => setCurrentPage('assessment')}
+          onNavigateToAssessment={() => handleSelectPage('assessment')}
         />
       )}
 
-      {/* 8. Baseline & Health Overview Matrix (Phase 1) */}
+      {/* 8. Baseline & Health Overview Matrix */}
       {currentPage === 'overview' && (
         <HealthOverview
           profile={profile}
           latestAssessment={latestAssessment}
         />
+      )}
+
+      {/* 9. Telemetry Sources & Gateway Settings */}
+      {currentPage === 'sources' && (
+        <SourcesPage />
       )}
     </AppLayout>
   );

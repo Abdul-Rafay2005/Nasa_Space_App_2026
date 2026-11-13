@@ -38,7 +38,7 @@ export const BodyMapPage: React.FC<BodyMapPageProps> = ({
   onNavigateToAssessment,
   initialSelectedPartId,
 }) => {
-  const [viewMode, setViewMode] = useState<'3d' | '2d_clean' | '2d_detailed'>('3d');
+  const [viewMode, setViewMode] = useState<'3d' | '2d_clean' | '2d_detailed'>('2d_clean');
   const [selectedOrganId, setSelectedOrganId] = useState<string>(initialSelectedPartId || 'heart');
 
   return (

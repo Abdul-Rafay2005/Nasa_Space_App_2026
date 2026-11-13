@@ -1,0 +1,14 @@
+{
+  "name": "aegis-telemetry-gateway",
+  "version": "1.0.0",
+  "description": "Aegis Health — Runtime Telemetry WebSocket Gateway & Serial Device Bridge",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "publish:demo": "node src/publishers/demoPublisher.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

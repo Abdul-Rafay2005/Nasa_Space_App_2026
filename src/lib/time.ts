@@ -35,3 +35,4 @@ export function formatAge(seconds: number | null): string {
   const hours = Math.floor(mins / 60);
   return `${hours}h ago`;
 }
+

@@ -41,3 +41,4 @@ export interface AlertIncident {
   summary: string;
   recommendation: string;
 }
+
