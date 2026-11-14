@@ -15,11 +15,13 @@ import {
   History,
   Activity,
   Settings,
+  Bot,
 } from 'lucide-react';
 import { AstronautProfile } from '../../types/health';
 
 export type NavigationPage =
   | 'dashboard'
+  | 'ai-chat'
   | 'assessment'
   | 'body-map'
   | 'analytics'
@@ -39,6 +41,7 @@ interface SidebarProps {
 
 const navItems = [
   { id: 'dashboard' as NavigationPage, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'ai-chat' as NavigationPage, label: 'AI Flight Surgeon', icon: Bot, badge: 'Gemini' },
   { id: 'assessment' as NavigationPage, label: 'Health Check-in', icon: ClipboardCheck },
   { id: 'body-map' as NavigationPage, label: 'Body Overview', icon: User },
   { id: 'analytics' as NavigationPage, label: 'Trends & Charts', icon: TrendingUp },
@@ -120,7 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     isActive ? 'text-white scale-110' : 'text-slate-400'
                   }`}
                 />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate flex-1">{item.label}</span>
+                {'badge' in item && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

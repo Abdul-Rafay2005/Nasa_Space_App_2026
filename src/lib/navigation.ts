@@ -5,6 +5,7 @@
 
 export type AppRoute =
   | 'monitor'
+  | 'chat'
   | 'trends'
   | 'body'
   | 'check-in'
@@ -18,6 +19,10 @@ export type AppRoute =
 const routeAliases: Record<string, AppRoute> = {
   dashboard: 'monitor',
   monitor: 'monitor',
+  chat: 'chat',
+  'ai-chat': 'chat',
+  'ai-assistant': 'chat',
+  doctor: 'chat',
   analytics: 'trends',
   trends: 'trends',
   'body-map': 'body',

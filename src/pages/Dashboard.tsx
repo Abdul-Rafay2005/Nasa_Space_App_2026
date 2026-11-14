@@ -28,6 +28,7 @@ import {
   Wind,
   Shield,
   Activity,
+  Bot,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -42,6 +43,7 @@ interface DashboardProps {
   onNavigateToAnalytics: () => void;
   onNavigateToGuidance: () => void;
   onNavigateToRoutine: () => void;
+  onNavigateToAiDoctor?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -56,6 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigateToAnalytics: _onNavigateToAnalytics,
   onNavigateToGuidance,
   onNavigateToRoutine: _onNavigateToRoutine,
+  onNavigateToAiDoctor,
 }) => {
   const [modalRecord, setModalRecord] = useState<DailyAssessmentRecord | null>(null);
   const [selectedSbarAlert, setSelectedSbarAlert] = useState<DriftAlert | null>(null);
@@ -141,6 +144,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden sm:inline">NASA Resources</span>
           </button>
+
+          {/* AI Flight Surgeon Trigger */}
+          {onNavigateToAiDoctor && (
+            <button
+              onClick={onNavigateToAiDoctor}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border border-blue-500/40 text-xs font-semibold text-blue-200 hover:from-blue-600/50 hover:to-indigo-600/50 transition-all shadow-lg backdrop-blur-md"
+              title="Consult Dr. Orion (AI Doctor powered by Gemini)"
+            >
+              <Bot className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline">Dr. Orion AI</span>
+            </button>
+          )}
 
           {/* Mission Day Pill */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0b132c]/90 border border-cyan-500/30 text-white font-sans text-xs font-semibold shadow-lg backdrop-blur-md">

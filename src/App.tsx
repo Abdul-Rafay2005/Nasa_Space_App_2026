@@ -16,6 +16,8 @@ import { BodyMapPage } from './pages/BodyMapPage';
 import { FlightSurgeonGuidancePage } from './pages/FlightSurgeonGuidancePage';
 import { MissionRoutinePage } from './pages/MissionRoutinePage';
 import { SourcesPage } from './pages/SourcesPage';
+import { AiFlightSurgeonPage } from './pages/AiFlightSurgeonPage';
+import { FloatingChatButton } from './components/chat/FloatingChatButton';
 import { getCurrentRoute, navigateTo, subscribeToRoute, AppRoute } from './lib/navigation';
 import { runV1Migration } from './services/persistence/migrationV1';
 import {
@@ -30,6 +32,7 @@ import { AstronautProfile, DailyAssessmentRecord } from './types/health';
 const routeToNavPage = (r: AppRoute): NavigationPage => {
   switch (r) {
     case 'monitor': return 'dashboard';
+    case 'chat': return 'ai-chat';
     case 'trends': return 'analytics';
     case 'body': return 'body-map';
     case 'check-in': return 'assessment';
@@ -45,6 +48,7 @@ const routeToNavPage = (r: AppRoute): NavigationPage => {
 const navPageToRoute = (p: NavigationPage): AppRoute => {
   switch (p) {
     case 'dashboard': return 'monitor';
+    case 'ai-chat': return 'chat';
     case 'analytics': return 'trends';
     case 'body-map': return 'body';
     case 'assessment': return 'check-in';
@@ -121,6 +125,19 @@ export const App: React.FC = () => {
           onNavigateToAnalytics={() => handleSelectPage('analytics')}
           onNavigateToGuidance={() => handleSelectPage('guidance')}
           onNavigateToRoutine={() => handleSelectPage('routine')}
+          onNavigateToAiDoctor={() => handleSelectPage('ai-chat')}
+        />
+      )}
+
+      {/* AI Flight Surgeon Telemedicine Assistant (Powered by Gemini) */}
+      {currentPage === 'ai-chat' && (
+        <AiFlightSurgeonPage
+          profile={profile}
+          latestAssessment={latestAssessment}
+          historyRecords={records}
+          onNavigateToCheckIn={() => handleSelectPage('assessment')}
+          onNavigateToGuidance={() => handleSelectPage('guidance')}
+          onNavigateToBodyMap={() => handleSelectPage('body-map')}
         />
       )}
 
@@ -194,6 +211,13 @@ export const App: React.FC = () => {
       {currentPage === 'sources' && (
         <SourcesPage />
       )}
+
+      {/* Floating AI Flight Surgeon Companion (Available across all screens) */}
+      <FloatingChatButton
+        profile={profile}
+        latestAssessment={latestAssessment}
+        historyRecords={records}
+      />
     </AppLayout>
   );
 };

@@ -69,6 +69,10 @@ export function setGroundLinkMode(mode: 'direct' | 'mars_delay' | 'blackout') {
   notify();
 }
 
+export function getGroundLinkState(): GroundLinkState {
+  return { ...globalState };
+}
+
 export function useGroundLink(): [GroundLinkState, (mode: 'direct' | 'mars_delay' | 'blackout') => void] {
   const [state, setState] = useState<GroundLinkState>(globalState);
 
@@ -81,3 +85,4 @@ export function useGroundLink(): [GroundLinkState, (mode: 'direct' | 'mars_delay
 
   return [state, setGroundLinkMode];
 }
+
