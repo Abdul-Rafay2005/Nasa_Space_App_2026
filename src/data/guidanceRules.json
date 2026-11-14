@@ -5,15 +5,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "Nominal Cardiac Rhythm & Rate",
+    "whatHappened": "Resting heart rate is within optimal microgravity adaptation window (51–90 BPM).",
+    "whyItMatters": "Fluid shifts toward the upper body cause baroreceptors to adjust heart rate. Stable resting rate indicates adequate autonomic adaptation.",
+    "whatToDoNow": [
+      "Maintain planned daily cardiovascular countermeasure routine (ARED / T2 treadmill).",
+      "Continue standard daily hydration protocol of 2.0 to 2.5 L with electrolyte balance.",
+      "Log scheduled resting telemetry reading during evening post-exercise debrief."
+    ],
+    "whenToTellEarth": "Standard daily telemetry downlink; report at next routine medical check-in.",
     "actions": [
-      "Maintain planned daily cardiovascular countermeasure routine (T2 treadmill / cycle ergometer).",
+      "Maintain planned daily cardiovascular countermeasure routine (ARED / T2 treadmill).",
       "Continue standard daily hydration protocol of 2.0 to 2.5 L with electrolyte balance.",
       "Log scheduled resting telemetry reading during evening post-exercise debrief."
     ],
     "whenToContactFlightSurgeon": "Contact flight surgeon if heart rate remains nominal but you experience unexpected palpitations, chest tightness, or lightheadedness.",
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "heart",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Risks: Cardiovascular Adaptations / NEWS2",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "heartRate-yellow",
@@ -21,17 +32,29 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Sub-Nominal Resting Heart Rate Variance",
+    "whatHappened": "Resting heart rate (41–50 or 91–130 BPM) has departed from nominal resting band.",
+    "whyItMatters": "Elevated resting pulse may indicate dehydration, hypercapnia (CO2 build-up), or workload stress. Bradycardia (<50 BPM) risks orthostatic syncope.",
+    "whatToDoNow": [
+      "Pause intense physical countermeasure workloads for the next 2 hours.",
+      "Drink 500 mL of oral electrolyte solution to address microgravity hypovolemia.",
+      "Check telemetry sensor contact and lead attachment on the bio-harness.",
+      "Re-measure resting heart rate after 15 minutes of quiet rest."
+    ],
+    "whenToTellEarth": "Include in next daily summary to ground unless accompanied by dizziness or chest tightness.",
     "actions": [
       "Pause intense physical countermeasure workloads for the next 2 hours.",
       "Drink 500 mL of oral electrolyte solution to address microgravity hypovolemia.",
       "Check telemetry sensor contact and lead attachment on the bio-harness.",
-      "Re-measure resting heart rate after 2 hours of quiet station activities."
+      "Re-measure resting heart rate after 15 minutes of quiet rest."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if resting heart rate exceeds 100 BPM for two consecutive checks or is accompanied by dizziness.",
+    "whenToContactFlightSurgeon": "Contact flight surgeon if resting heart rate remains elevated for 2 consecutive checks or is accompanied by dizziness.",
     "remeasureIntervalHours": 2,
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "heart",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NEWS2 Clinical Scoring / MedlinePlus Resting Ranges",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "heartRate-red",
@@ -39,16 +62,28 @@
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
     "title": "Critical Cardiac Telemetry Alert",
+    "whatHappened": "Resting heart rate is marked critical (≤40 BPM bradycardia or ≥131 BPM tachycardia).",
+    "whyItMatters": "Marked deviations signal acute hemodynamic instability, severe dehydration, or cardiac arrhythmia, compromising mission safety.",
+    "whatToDoNow": [
+      "Cease all EVA preparations, treadmill training, and strenuous physical activities immediately.",
+      "Adopt a neutral recumbent microgravity rest posture with tethered support.",
+      "Notify crew medical officer (CMO) and prepare for flight surgeon audio conference.",
+      "Keep 12-lead ECG bio-harness streaming continuous telemetry."
+    ],
+    "whenToTellEarth": "Contact Flight Surgeon immediately via priority Space-to-Ground audio line (or queue priority medical packet in Mars Autonomous Mode).",
     "actions": [
       "Cease all EVA preparations, treadmill training, and strenuous physical activities immediately.",
       "Adopt a neutral recumbent microgravity rest posture with tethered support.",
-      "Notify crew medical officer (CMO) and standby for flight surgeon audio uplink.",
-      "Keep 12-lead ECG bio-harness streaming continuous telemetry to MCC ground station."
+      "Notify crew medical officer (CMO) and prepare for flight surgeon audio conference.",
+      "Keep 12-lead ECG bio-harness streaming continuous telemetry."
     ],
-    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately via Space-to-Ground Audio Channel B or CapCom priority line.",
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Critical rate deviation requires urgent clinical evaluation.",
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "heart",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NEWS2 Score 3 Critical Threshold / AHA Emergency Criteria",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodPressure-green",
@@ -56,15 +91,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "Nominal Arterial Perfusion",
+    "whatHappened": "Blood pressure (111–119 systolic / 60–79 diastolic mmHg) is optimal.",
+    "whyItMatters": "Arterial compliance and baroreceptor reflexes are functioning smoothly under microgravity headward fluid distribution.",
+    "whatToDoNow": [
+      "Continue standard orbital dietary sodium intake (1.5–2.3 g/day).",
+      "Perform scheduled lower-body negative pressure (LBNP) exercise if in mission rotation.",
+      "Record next blood pressure measurement at nominal morning check-in."
+    ],
+    "whenToTellEarth": "Log in routine daily mission debrief.",
     "actions": [
       "Continue standard orbital dietary sodium intake (1.5–2.3 g/day).",
-      "Perform scheduled lower-body negative pressure (LBNP) maintenance if in mission rotation.",
+      "Perform scheduled lower-body negative pressure (LBNP) exercise if in mission rotation.",
       "Record next blood pressure measurement at nominal morning check-in."
     ],
     "whenToContactFlightSurgeon": "Contact flight surgeon if sudden orthostatic visual narrowing or headache develops despite nominal readings.",
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "heart",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "American Heart Association (AHA) / NEWS2",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodPressure-yellow",
@@ -72,17 +118,29 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Elevated or Depressed Blood Pressure Variance",
+    "whatHappened": "Blood pressure (91–110 or 120–180 systolic / 80–120 diastolic mmHg) is outside optimal range.",
+    "whyItMatters": "Pre-hypertensive spikes can exacerbate cephalad intracranial venous pressure; low pressures increase pre-syncopal risk.",
+    "whatToDoNow": [
+      "Review recent sodium and caffeine intake from station food rations.",
+      "Perform 15 minutes of lower-body muscle tensing and calf compression exercises.",
+      "Ensure proper cuff placement over the brachial artery at heart level.",
+      "Re-measure blood pressure in 4 hours while seated quietly for 5 minutes."
+    ],
+    "whenToTellEarth": "Include in next daily summary to ground.",
     "actions": [
       "Review recent sodium and caffeine intake from station food rations.",
       "Perform 15 minutes of lower-body muscle tensing and calf compression exercises.",
       "Ensure proper cuff placement over the brachial artery at heart level.",
       "Re-measure blood pressure in 4 hours while seated quietly for 5 minutes."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if systolic pressure remains above 135 mmHg or below 90 mmHg across two consecutive readings.",
+    "whenToContactFlightSurgeon": "Contact flight surgeon if systolic pressure remains above 140 mmHg or below 90 mmHg across two consecutive readings.",
     "remeasureIntervalHours": 4,
-    "relatedBodyPartId": "kidney",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "heart",
+    "source": "American Heart Association Guidelines / NEWS2",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodPressure-red",
@@ -90,16 +148,28 @@
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
     "title": "Severe Hemodynamic Pressure Deviation",
+    "whatHappened": "Blood pressure exceeds crisis levels (>180 systolic or >120 diastolic, or severe hypotension ≤90 mmHg).",
+    "whyItMatters": "Hypertensive crisis (>180 mmHg) risks stroke or encephalopathy in microgravity; severe hypotension (≤90 mmHg) causes acute cerebral hypoperfusion.",
+    "whatToDoNow": [
+      "Rest immediately in sleep quarters with minimal sensory and auditory stimulation.",
+      "Have crewmate prepare manual sphygmomanometer from Crew Medical Pack for verification.",
+      "Avoid rapid translational movements across habitat modules to prevent syncope.",
+      "Initiate medical telemetry conference with MCC Flight Surgeon."
+    ],
+    "whenToTellEarth": "Contact Flight Surgeon immediately via priority channel.",
     "actions": [
       "Rest immediately in sleep quarters with minimal sensory and auditory stimulation.",
       "Have crewmate prepare manual sphygmomanometer from Crew Medical Pack for verification.",
       "Avoid rapid translational movements across habitat modules to prevent syncope.",
-      "Establish direct private medical conference (PMC) with MCC Flight Surgeon."
+      "Initiate medical telemetry conference with MCC Flight Surgeon."
     ],
-    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Systolic ≥ 141 mmHg or ≤ 84 mmHg indicates acute perfusion risk.",
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Blood pressure in crisis envelope requires urgent clinical intervention.",
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Cardiovascular Adaptations",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "heart",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "AHA Hypertensive Crisis / NEWS2 Shock Index",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodSugar-green",
@@ -107,15 +177,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "Balanced Metabolic Glucose Levels",
+    "whatHappened": "Fasting blood sugar (70–99 mg/dL) is within normal euglycemic window.",
+    "whyItMatters": "Nutritional energy intake matches physical exercise expenditure, supporting muscle mass retention and cognitive performance.",
+    "whatToDoNow": [
+      "Follow scheduled balanced macronutrient meal packs (50% carb, 30% fat, 20% protein).",
+      "Keep standard post-exercise carbohydrate replenishment snacks timed within 45 minutes.",
+      "Log regular check-in during morning pre-work routine."
+    ],
+    "whenToTellEarth": "Standard daily mission log.",
     "actions": [
       "Follow scheduled balanced macronutrient meal packs (50% carb, 30% fat, 20% protein).",
       "Keep standard post-exercise carbohydrate replenishment snacks timed within 45 minutes.",
       "Log regular check-in during morning pre-work routine."
     ],
     "whenToContactFlightSurgeon": "Contact flight surgeon if experiencing symptoms of shakiness, extreme thirst, or sweating.",
+    "nasaHazard": "Distance from Earth",
+    "nasaRisk": "Inadequate Food and Nutrition",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "liver",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "CDC Diabetes Testing (normal euglycemia 70–99 mg/dL)",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodSugar-yellow",
@@ -123,17 +204,29 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Moderate Glycemic Departure",
-    "actions": [
-      "Consume a complex carbohydrate snack with 250 mL water if reading is sub-nominal.",
-      "If elevated, delay high-sugar snack pouches and emphasize lean protein and fiber.",
+    "whatHappened": "Blood glucose is in warning band (54–69 mg/dL mild low, or 100–125 mg/dL prediabetic elevation).",
+    "whyItMatters": "Mild hypoglycemia impairs reaction time during teleoperations; prediabetic elevations signal insulin resistance shifts in space.",
+    "whatToDoNow": [
+      "Consume a complex carbohydrate ration with 250 mL water if reading is low.",
+      "If elevated, delay high-sugar snack pouches and emphasize lean protein and hydration.",
       "Verify glucometer calibration test strip lot number with station inventory.",
       "Re-measure blood glucose level in 2 hours."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if blood sugar is <65 mg/dL with tremor or >160 mg/dL with persistent nausea.",
+    "whenToTellEarth": "Include in next daily summary to ground.",
+    "actions": [
+      "Consume a complex carbohydrate ration with 250 mL water if reading is low.",
+      "If elevated, delay high-sugar snack pouches and emphasize lean protein and hydration.",
+      "Verify glucometer calibration test strip lot number with station inventory.",
+      "Re-measure blood glucose level in 2 hours."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if glucose remains <65 mg/dL with tremor or >140 mg/dL across two consecutive tests.",
     "remeasureIntervalHours": 2,
+    "nasaHazard": "Distance from Earth",
+    "nasaRisk": "Inadequate Food and Nutrition",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "liver",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "CDC Prediabetes Criteria (100–125 mg/dL) & Hypoglycemia (<70 mg/dL)",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bloodSugar-red",
@@ -141,16 +234,28 @@
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
     "title": "Critical Glucose Imbalance Alert",
-    "actions": [
-      "If hypoglycemic (<60 mg/dL), consume emergency oral glucose gel pouch immediately.",
-      "If severely hyperglycemic (>180 mg/dL), drink water continuously and check for ketones if kit available.",
+    "whatHappened": "Fasting blood sugar is in critical range (<54 mg/dL severe hypoglycemia or ≥126 mg/dL diabetes threshold).",
+    "whyItMatters": "Severe hypoglycemia (<54 mg/dL) causes neuroglycopenia, confusion, and loss of consciousness. Red here requires flight surgeon review.",
+    "whatToDoNow": [
+      "If hypoglycemic (<54 mg/dL), consume emergency oral glucose gel pouch immediately.",
+      "If severely hyperglycemic (≥126 mg/dL), drink water continuously and review station nutrition log.",
       "Crew Medical Officer must assist with repeat capillary blood verification.",
-      "Request Flight Surgeon telemetry consult for insulin or glucose countermeasure protocol."
+      "Review flight surgeon guidance for nutritional or medical intervention."
     ],
-    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately via mission audio loop: severe glycemic crisis compromises EVA and flight safety.",
+    "whenToTellEarth": "Contact Flight Surgeon now (or queue priority medical transmission if delayed).",
+    "actions": [
+      "If hypoglycemic (<54 mg/dL), consume emergency oral glucose gel pouch immediately.",
+      "If severely hyperglycemic (≥126 mg/dL), drink water continuously and review station nutrition log.",
+      "Crew Medical Officer must assist with repeat capillary blood verification.",
+      "Review flight surgeon guidance for nutritional or medical intervention."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Severe glycemic departure compromises mission operations.",
+    "nasaHazard": "Distance from Earth",
+    "nasaRisk": "Inadequate Food and Nutrition",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "liver",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "CDC Clinical Diabetes & Hypoglycemia Standards",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bodyTemperature-green",
@@ -158,15 +263,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "Nominal Core Thermoregulation",
+    "whatHappened": "Core body temperature (36.1–38.0°C) is within nominal spaceflight limits.",
+    "whyItMatters": "Convective heat loss is reduced in weightlessness, leading to slightly higher baseline core temps ('Space Fever'); reading is nominal.",
+    "whatToDoNow": [
+      "Keep habitability module ventilation ducts unobstructed to ensure convective air movement.",
+      "Wear appropriate thermal clothing layers during low-activity sleep shifts.",
+      "Log core telemetry during scheduled daily medical check-in."
+    ],
+    "whenToTellEarth": "Standard daily mission log.",
     "actions": [
       "Keep habitability module ventilation ducts unobstructed to ensure convective air movement.",
       "Wear appropriate thermal clothing layers during low-activity sleep shifts.",
       "Log core telemetry during scheduled daily medical check-in."
     ],
     "whenToContactFlightSurgeon": "Contact flight surgeon if chills, feverish sensation, or localized heat discomfort occur.",
-    "relatedBodyPartId": "lung",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "nasaHazard": "Hostile/Closed Environment",
+    "nasaRisk": "Altered Immune System Responses",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "skin",
+    "source": "NEWS2 Clinical Protocol / MedlinePlus (36.1–38.0°C)",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bodyTemperature-yellow",
@@ -174,34 +290,58 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Elevated Microgravity Core Temperature",
+    "whatHappened": "Core temperature is in warning band (35.1–36.0°C sub-normal or 38.1–39.0°C elevated).",
+    "whyItMatters": "Spaceflight impairs perspiration evaporation; core temp above 38.0°C may indicate impending infection or post-exercise thermal retention.",
+    "whatToDoNow": [
+      "Adjust personal air-diffuser velocity in work compartment to maximize evaporative cooling.",
+      "Remove heavy thermal layers and apply cool damp wipes to forehead and neck.",
+      "Drink 400 mL chilled electrolyte water to support core cooling.",
+      "Re-measure core body temperature in 1 hour."
+    ],
+    "whenToTellEarth": "Include in next daily summary to ground.",
     "actions": [
       "Adjust personal air-diffuser velocity in work compartment to maximize evaporative cooling.",
       "Remove heavy thermal layers and apply cool damp wipes to forehead and neck.",
       "Drink 400 mL chilled electrolyte water to support core cooling.",
-      "Re-measure core body temperature in 2 hours."
+      "Re-measure core body temperature in 1 hour."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if core temperature exceeds 37.8°C or fails to drop after 2 hours of cooling.",
-    "remeasureIntervalHours": 2,
+    "whenToContactFlightSurgeon": "Contact flight surgeon if core temperature exceeds 38.5°C or fails to drop after 2 hours of cooling.",
+    "remeasureIntervalHours": 1,
+    "nasaHazard": "Hostile/Closed Environment",
+    "nasaRisk": "Altered Immune System Responses",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "skin",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Space Fever Research / NEWS2 Score 1-2",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "bodyTemperature-red",
     "indicatorId": "bodyTemperature",
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
-    "title": "Hyperthermia or Hypothermia Warning",
-    "actions": [
-      "Cease all physical exertion and remove any restrictive pressure or exercise garments.",
+    "title": "High Fever (≥39.1°C) or Severe Hypothermia",
+    "whatHappened": "Body temperature is 39.1°C or higher (or ≤35.0°C hypothermia).",
+    "whyItMatters": "The immune system weakens in space; fever can be the first sign of infection or systemic inflammation.",
+    "whatToDoNow": [
+      "Rest, drink fluids, re-measure in 1 hour, follow crew medical procedures.",
       "Access Crew Medical Pack antipyretic protocol under CMO supervision.",
       "Verify ECLSS cabin environmental temperature and humidity readings with ground control.",
       "Initiate immediate Flight Surgeon voice consult for thermal regulation intervention."
     ],
-    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Core temperature ≥ 38.0°C indicates systemic infection or severe thermoregulatory failure.",
+    "whenToTellEarth": "Contact Flight Surgeon now (crew medical officer if delayed).",
+    "actions": [
+      "Rest, drink fluids, re-measure in 1 hour, follow crew medical procedures.",
+      "Access Crew Medical Pack antipyretic protocol under CMO supervision.",
+      "Verify ECLSS cabin environmental temperature and humidity readings with ground control.",
+      "Initiate immediate Flight Surgeon voice consult for thermal regulation intervention."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon now: Core temperature ≥ 39.1°C requires immediate clinical triage.",
+    "nasaHazard": "Hostile/Closed Environment",
+    "nasaRisk": "Altered Immune System Responses",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "lung",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Immune Risk / NEWS2 Bands",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "sleepDuration-green",
@@ -209,15 +349,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "Adequate Restorative Sleep Window",
+    "whatHappened": "Logged sleep is 7.0 hours or more, meeting CDC healthy adult guidelines.",
+    "whyItMatters": "Full sleep cycles restore neurobehavioral alertness, memory consolidation, and ocular recovery from daytime fluid pressure.",
+    "whatToDoNow": [
+      "Maintain circadian sleep berth lighting schedule (dimmed blue spectrum 1 hour before sleep).",
+      "Keep sleep station earplugs and noise-canceling headsets accessible during ventilation cycles.",
+      "Aim for uninterrupted 7+ hour restorative window every Sol."
+    ],
+    "whenToTellEarth": "Standard daily mission log.",
     "actions": [
       "Maintain circadian sleep berth lighting schedule (dimmed blue spectrum 1 hour before sleep).",
       "Keep sleep station earplugs and noise-canceling headsets accessible during ventilation cycles.",
-      "Aim for uninterrupted 8.0-hour sleep opportunity each orbital day."
+      "Aim for uninterrupted 7+ hour restorative window every Sol."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if unrefreshing sleep or daytime sleepiness persists for more than 3 days.",
+    "whenToContactFlightSurgeon": "Contact flight surgeon if daytime sleepiness or unrefreshing sleep persists despite 7+ hours.",
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Inadequate Sleep and Irregular Schedules",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "CDC Adult Sleep Standards (7+ h) / NASA ARCHeR Study",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "sleepDuration-yellow",
@@ -225,34 +376,166 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Sub-Optimal Rest Deficit",
+    "whatHappened": "Sleep was 6.0–6.9 hours, reflecting typical orbital astronaut average (~6 h).",
+    "whyItMatters": "Short sleep causes cumulative attention degradation and slower reaction time over multi-day periods.",
+    "whatToDoNow": [
+      "Schedule a 20 to 30-minute power rest period in private sleep station before afternoon shift.",
+      "Limit high-caffeine rations during the 6 hours preceding the next sleep window.",
+      "Verify sleep berth ventilation fan speed and carbon dioxide scrubbing levels.",
+      "Re-evaluate cumulative sleep debt after tomorrow's wake-up cycle."
+    ],
+    "whenToTellEarth": "Include in next daily summary to ground.",
     "actions": [
       "Schedule a 20 to 30-minute power rest period in private sleep station before afternoon shift.",
       "Limit high-caffeine rations during the 6 hours preceding the next sleep window.",
       "Verify sleep berth ventilation fan speed and carbon dioxide scrubbing levels.",
       "Re-evaluate cumulative sleep debt after tomorrow's wake-up cycle."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon if cumulative sleep duration drops below 11 hours across two consecutive days.",
+    "whenToContactFlightSurgeon": "Contact flight surgeon if cumulative sleep duration remains <6.5 hours across three consecutive days.",
     "remeasureIntervalHours": 12,
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Inadequate Sleep and Irregular Schedules",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA-Funded Lancet Study (Astronauts avg ~6 h sleep)",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "sleepDuration-red",
     "indicatorId": "sleepDuration",
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
-    "title": "Critical Sleep Deprivation & Cognitive Risk",
-    "actions": [
+    "title": "Sleep Under 6h for 3 Consecutive Nights",
+    "whatHappened": "Sleep under 6 hours recorded for 3 nights in a row.",
+    "whyItMatters": "Irregular light and schedules disturb sleep; poor sleep reduces cognitive performance, motor coordination, and mission safety.",
+    "whatToDoNow": [
+      "Protect the next sleep period; avoid critical tasks or EVA while fatigued.",
       "Stand down from robotic arm teleoperation, docking operations, and critical valve maneuvering.",
-      "Complete brief cognitive readiness battery on station tablet.",
-      "Review station sleep aid medications (melatonin / zolpidem) with Flight Surgeon.",
-      "Request schedule adjustment from Mission Planning Lead to protect recovery sleep block."
+      "Review station sleep aid protocols with Flight Surgeon.",
+      "Request schedule adjustment from Mission Planning Lead to protect recovery block."
     ],
-    "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Sleep < 5.0 hours triggers mandatory flight rule fatigue review.",
+    "whenToTellEarth": "Include in next daily summary to ground; consult flight surgeon if daytime micro-sleeps occur.",
+    "actions": [
+      "Protect the next sleep period; avoid critical tasks or EVA while fatigued.",
+      "Stand down from robotic arm teleoperation, docking operations, and critical valve maneuvering.",
+      "Review station sleep aid protocols with Flight Surgeon.",
+      "Request schedule adjustment from Mission Planning Lead to protect recovery block."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon: Cumulative sleep restriction under 6h triggers fatigue countermeasure review.",
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Inadequate Sleep and Irregular Schedules",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Sleep Risk / ARCHeR Study (Artemis II)",
+    "reviewStatus": "APPROVED"
+  },
+  {
+    "id": "cabinCO2-yellow",
+    "indicatorId": "cabinCO2",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Cabin CO2 Elevated (3.1–4.5 mmHg)",
+    "whatHappened": "Cabin CO2 1-hour average is between 3.1 and 4.5 mmHg, exceeding NASA-STD-3001 3.0 mmHg limit.",
+    "whyItMatters": "CO2 builds up in a closed spacecraft. NASA limit is 3.0 mmHg; NASA flight surgeons report headaches at 2.8–4.5 mmHg.",
+    "whatToDoNow": [
+      "Check cabin air circulation fans and verify scrubber bed rotation in CDRA/ECLSS.",
+      "Inspect personal sleep quarters for localized CO2 pockets.",
+      "Note any mild headache, eye irritation, or cognitive fatigue in daily check-in."
+    ],
+    "whenToTellEarth": "Report to ground at next scheduled Capcom pass.",
+    "actions": [
+      "Check cabin air circulation fans and verify scrubber bed rotation in CDRA/ECLSS.",
+      "Inspect personal sleep quarters for localized CO2 pockets.",
+      "Note any mild headache, eye irritation, or cognitive fatigue in daily check-in."
+    ],
+    "whenToContactFlightSurgeon": "Contact flight surgeon if headache develops or CO2 exceeds 4.0 mmHg.",
+    "nasaHazard": "Hostile/Closed Environment",
+    "nasaRisk": "Hypoxia (closed-environment air)",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "lung",
+    "source": "NASA-STD-3001 Vol 2 [V2 6004] & NASA OCHMO TB-004",
+    "reviewStatus": "APPROVED"
+  },
+  {
+    "id": "cabinCO2-red",
+    "indicatorId": "cabinCO2",
+    "level": "RED",
+    "levelLabel": "Contact Flight Surgeon",
+    "title": "Cabin CO2 High (Above 4.5 mmHg)",
+    "whatHappened": "Cabin CO2 1-hour average is above 4.5 mmHg.",
+    "whyItMatters": "CO2 builds up in a closed spacecraft. NASA limit is 3 mmHg; headaches reported at 2.8–4.5 mmHg, fatigue and poor sleep above 4.5.",
+    "whatToDoNow": [
+      "Check air system / ventilation immediately; note headache or fatigue in check-in.",
+      "Don portable breathing apparatus (PBA) if acute respiratory distress occurs.",
+      "Verify secondary CO2 removal assembly operation with mission control."
+    ],
+    "whenToTellEarth": "Tell ground at next contact; immediately if symptoms are severe.",
+    "actions": [
+      "Check air system / ventilation immediately; note headache or fatigue in check-in.",
+      "Don portable breathing apparatus (PBA) if acute respiratory distress occurs.",
+      "Verify secondary CO2 removal assembly operation with mission control."
+    ],
+    "whenToContactFlightSurgeon": "Tell ground immediately: Cabin CO2 > 4.5 mmHg causes acute hypercapnia.",
+    "nasaHazard": "Hostile/Closed Environment",
+    "nasaRisk": "Hypoxia (closed-environment air)",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "lung",
+    "source": "NASA OCHMO TB-004 Carbon Dioxide Technical Brief",
+    "reviewStatus": "APPROVED"
+  },
+  {
+    "id": "radiationDose-yellow",
+    "indicatorId": "radiationDose",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Radiation Near Limit (300 mSv or more)",
+    "whatHappened": "Career radiation dose has passed 50% of the NASA career limit (300 mSv).",
+    "whyItMatters": "NASA career limit is 600 mSv; about 30% of ISS radiation is neutrons, which are especially harmful biologically.",
+    "whatToDoNow": [
+      "Use shielded areas during solar events; review planned spacewalks.",
+      "Check Canadian Space Agency (CSA) CANS autonomous neutron spectrometer readings.",
+      "Review dosimeter badges and personal EVA exposure quotas."
+    ],
+    "whenToTellEarth": "Report in next summary; immediately during a solar particle event (SPE).",
+    "actions": [
+      "Use shielded areas during solar events; review planned spacewalks.",
+      "Check Canadian Space Agency (CSA) CANS autonomous neutron spectrometer readings.",
+      "Review dosimeter badges and personal EVA exposure quotas."
+    ],
+    "whenToContactFlightSurgeon": "Contact radiation health officer during next pass for mission trajectory dose re-planning.",
+    "nasaHazard": "Space Radiation",
+    "nasaRisk": "Radiation-Induced Cancers",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "bone",
+    "source": "NASA OCHMO TB-020 & CSA: Monitoring Radiation for Astronaut Health",
+    "reviewStatus": "APPROVED"
+  },
+  {
+    "id": "visionHeadache-yellow",
+    "indicatorId": "visionHeadache",
+    "level": "YELLOW",
+    "levelLabel": "Monitor and apply countermeasures",
+    "title": "Visual Acuity Shift / Headache Reported (SANS)",
+    "whatHappened": "Crew member reported blurred vision, hyperopic shift, or persistent headache.",
+    "whyItMatters": "Cephalad fluid shifts increase intracranial and retrobulbar pressure, causing optic disc edema and globe flattening (SANS).",
+    "whatToDoNow": [
+      "Perform visual acuity card test and fundoscopy scan using station ophthalmoscope.",
+      "Increase Lower Body Negative Pressure (LBNP) session to draw fluid back toward legs.",
+      "Document eye pain, cotton wool spots, or scotoma in daily medical log."
+    ],
+    "whenToTellEarth": "Include in daily medical summary; notify flight surgeon if visual loss progresses.",
+    "actions": [
+      "Perform visual acuity card test and fundoscopy scan using station ophthalmoscope.",
+      "Increase Lower Body Negative Pressure (LBNP) session to draw fluid back toward legs.",
+      "Document eye pain, cotton wool spots, or scotoma in daily medical log."
+    ],
+    "whenToContactFlightSurgeon": "Contact Flight Surgeon if visual blurring persists for 2 consecutive days (triggers red SANS protocol).",
+    "nasaHazard": "Gravity Fields",
+    "nasaRisk": "Spaceflight-Associated Neuro-ocular Syndrome (SANS)",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
+    "relatedBodyPartId": "eye",
+    "source": "NASA HRP SANS Evidence Book",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "mood-green",
@@ -260,15 +543,26 @@
     "level": "GREEN",
     "levelLabel": "Self-care",
     "title": "High Cognitive Morale & Operational Readiness",
+    "whatHappened": "Psychological readiness is optimal; morale, focus, and crew cohesion are nominal.",
+    "whyItMatters": "Psychological resilience buffers the chronic stressors of microgravity isolation, heavy timelines, and confinement.",
+    "whatToDoNow": [
+      "Participate in daily communal crew meal and recreational downtime.",
+      "Utilize station Cupola / Earth observation window time for mental restoration.",
+      "Continue regular family audio/video communication conferences as scheduled."
+    ],
+    "whenToTellEarth": "Standard weekly private psychological conference.",
     "actions": [
       "Participate in daily communal crew meal and recreational downtime.",
       "Utilize station Cupola / Earth observation window time for mental restoration.",
       "Continue regular family audio/video communication conferences as scheduled."
     ],
     "whenToContactFlightSurgeon": "Contact flight surgeon or behavioral health specialist whenever you feel mounting psychological strain.",
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Behavioral Conditions and Psychiatric Disorders",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Behavioral Health & Performance",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "mood-yellow",
@@ -276,17 +570,29 @@
     "level": "YELLOW",
     "levelLabel": "Monitor and apply countermeasures",
     "title": "Operational Stress or Sensory Fatigue",
+    "whatHappened": "Crew member reports fatigue, elevated mission stress, or emotional strain.",
+    "whyItMatters": "Confinement stress and sensory monotony can erode sleep quality, mood stability, and crew interaction.",
+    "whatToDoNow": [
+      "Engage in 20 minutes of guided audio meditation or binaural relaxation in private quarters.",
+      "Schedule non-operational personal conference with family or ground support team.",
+      "Review workload timeline with Commander to rebalance task allocation.",
+      "Re-evaluate behavioral state at the next shift handover."
+    ],
+    "whenToTellEarth": "Include in next daily summary or private psychological conference.",
     "actions": [
       "Engage in 20 minutes of guided audio meditation or binaural relaxation in private quarters.",
       "Schedule non-operational personal conference with family or ground support team.",
       "Review workload timeline with Commander to rebalance task allocation.",
       "Re-evaluate behavioral state at the next shift handover."
     ],
-    "whenToContactFlightSurgeon": "Contact flight surgeon or Behavioral Health and Performance (BHP) team if feelings of isolation or irritability persist.",
+    "whenToContactFlightSurgeon": "Contact flight surgeon or Behavioral Health team if feelings of isolation or irritability persist for 2+ days.",
     "remeasureIntervalHours": 8,
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Behavioral Conditions and Psychiatric Disorders",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Behavioral Health & Performance (BHP)",
+    "reviewStatus": "APPROVED"
   },
   {
     "id": "mood-red",
@@ -294,6 +600,15 @@
     "level": "RED",
     "levelLabel": "Contact Flight Surgeon",
     "title": "Severe Behavioral Strain or Disorientation Alert",
+    "whatHappened": "Crew member reports acute disorientation, severe distress, or Space Adaptation Syndrome (SAS).",
+    "whyItMatters": "Acute disorientation impairs psychomotor control during critical docking or EVA maneuvers and demands immediate clinical support.",
+    "whatToDoNow": [
+      "Step back from solitary or safety-critical mission console operations.",
+      "Notify Mission Commander or Crew Medical Officer for peer support.",
+      "Transfer to low-stimulus environment with dim ambient lighting in Crew Quarters.",
+      "Initiate confidential Private Psychological Conference (PPC) with NASA BHP team."
+    ],
+    "whenToTellEarth": "Contact Flight Surgeon immediately: Acute disorientation requires immediate clinical support.",
     "actions": [
       "Step back from solitary or safety-critical mission console operations.",
       "Notify Mission Commander or Crew Medical Officer for peer support.",
@@ -301,9 +616,11 @@
       "Initiate confidential Private Psychological Conference (PPC) with NASA BHP team."
     ],
     "whenToContactFlightSurgeon": "Contact Flight Surgeon immediately: Acute disorientation or psychological crisis requires immediate mission support.",
+    "nasaHazard": "Isolation & Confinement",
+    "nasaRisk": "Behavioral Conditions and Psychiatric Disorders",
+    "nasaRiskUrl": "https://www.nasa.gov/hrp/risks",
     "relatedBodyPartId": "brain",
-    "source": "To be confirmed by research team",
-    "reviewStatus": "PLACEHOLDER"
+    "source": "NASA HRP Behavioral Health / Space Adaptation Syndrome (SAS)",
+    "reviewStatus": "APPROVED"
   }
 ]
-

@@ -1,9 +1,13 @@
 /**
  * Aegis Health — Flight Surgeon Guidance & Clinical Decision Support
- * Conforms to Section 10.6 of PLAN.md
+ * Updated 14 November 2026 per Official NASA & CSA Research Report (Eman Saleem)
  * 
- * Provides evidence-based clinical decision support protocols, interactive checklists,
- * local SBAR medical summary generation, and local alert incident acknowledgement.
+ * Implements 4-part alert card format:
+ * 1. What Happened
+ * 2. Why It Matters (linked to official NASA HRP Risk)
+ * 3. What To Do Now (countermeasures checklist)
+ * 4. When To Tell Earth (communication protocol)
+ * Tagged with NASA 5 Hazards, EIMO 2023 autonomy, and SBAR medical packet generation.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -15,6 +19,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
 import { acknowledgeIncident } from '../services/alertEngine';
+import { NasaResourcesModal } from '../components/common/NasaResourcesModal';
 import {
   ShieldAlert,
   Search,
@@ -26,6 +31,10 @@ import {
   Copy,
   Download,
   Check,
+  BookOpen,
+  ExternalLink,
+  Radio,
+  Sparkles,
 } from 'lucide-react';
 
 const guidanceRulesData = rawGuidanceRules as GuidanceRule[];
@@ -53,6 +62,7 @@ export const FlightSurgeonGuidancePage: React.FC<FlightSurgeonGuidancePageProps>
   const [checkedActions, setCheckedActions] = useState<Record<string, boolean>>({});
   const [acknowledgedRules, setAcknowledgedRules] = useState<Record<string, boolean>>({});
   const [sbarModalOpen, setSbarModalOpen] = useState(false);
+  const [resourcesModalOpen, setResourcesModalOpen] = useState(false);
   const [copiedSbar, setCopiedSbar] = useState(false);
 
   const toggleAction = (ruleId: string, actionIndex: number) => {
@@ -74,8 +84,10 @@ export const FlightSurgeonGuidancePage: React.FC<FlightSurgeonGuidancePageProps>
         const q = searchQuery.toLowerCase();
         const indName = item.indicator.displayName.toLowerCase();
         const title = item.rule.title.toLowerCase();
+        const hazard = (item.rule.nasaHazard || '').toLowerCase();
+        const risk = (item.rule.nasaRisk || '').toLowerCase();
         const actionsText = item.rule.actions.join(' ').toLowerCase();
-        return indName.includes(q) || title.includes(q) || actionsText.includes(q);
+        return indName.includes(q) || title.includes(q) || hazard.includes(q) || risk.includes(q) || actionsText.includes(q);
       }
       return true;
     });
@@ -91,12 +103,13 @@ export const FlightSurgeonGuidancePage: React.FC<FlightSurgeonGuidancePageProps>
 Date/Time (UTC): ${new Date().toISOString()}
 Subject: ${profile.name} (${profile.callSign})
 Spacecraft: ${profile.spacecraft} | Mission Sol: ${profile.currentMissionDay}
+Protocol: Autonomous Onboard Decision Support (NASA EIMO 2023)
 
 1. SITUATION:
 Observed vital deviations: ${situations || 'All active indicators nominal.'}
 
 2. BACKGROUND:
-Astronaut resting baselines:
+Astronaut baseline comparisons (Standard Measures):
 - Heart Rate: ${profile.restingHeartRateBaseline} BPM
 - Blood Pressure: ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg
 - Body Temperature: ${profile.bodyTemperatureBaseline.toFixed(1)} °C
@@ -104,13 +117,17 @@ Latest Assessment ID: ${latestAssessment?.id || 'STREAM-CURRENT'}
 
 3. ASSESSMENT:
 Primary clinical advisory: ${guidanceResult.items[0]?.rule.title || 'Nominal adaptation status'}
-Observation: ${guidanceResult.items[0]?.indicator.reason || 'Normal spaceflight physiological response.'}
+Hazard Classification: ${guidanceResult.items[0]?.rule.nasaHazard || 'Gravity Fields'}
+NASA Risk: ${guidanceResult.items[0]?.rule.nasaRisk || 'Cardiovascular Adaptations'}
+Clinical Basis: ${guidanceResult.items[0]?.rule.source || 'NASA HRP / NEWS2 Guidelines'}
 
-4. RECOMMENDATIONS:
+4. RECOMMENDATIONS (COUNTERMEASURES):
 ${guidanceResult.items.flatMap((i) => i.rule.actions).map((a, idx) => `[ ] ${idx + 1}. ${a}`).join('\n')}
 
-Notice: Operational decision-support prototype. Requires flight surgeon authorization.
-==================================================`;
+5. COMMUNICATION DIRECTIVE:
+${guidanceResult.items[0]?.rule.whenToTellEarth || guidanceResult.items[0]?.rule.whenToContactFlightSurgeon || 'Include in routine daily downlink.'}
+==================================================
+Notice: Decision-support prototype only. Subordinate to certified NASA Flight Surgeons.`;
   }, [guidanceResult, profile, latestAssessment]);
 
   const handleCopySbar = () => {
@@ -137,19 +154,30 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
       <div className="p-6 rounded-2xl bg-gradient-to-r from-space-900 via-space-850 to-space-900 border border-cyan-500/30 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono text-xs shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>NASA HRP 5 HAZARDS & 17 RISKS INTEGRATED • DECISION-SUPPORT PROTOTYPE</span>
+            </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-100 font-sans tracking-wide flex items-center gap-2.5">
               <ShieldAlert className="w-6 h-6 text-cyan-400" />
-              Flight Surgeon Guidance Engine
+              Flight Surgeon Guidance & Countermeasure Protocols
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 font-sans max-w-3xl">
-              Evidence-based clinical decision support rules calibrated for microgravity countermeasure protocols.
+              Autonomous clinical decision-support engine designed for deep space missions (NASA EIMO 2023). Every alert explains <em>What happened</em>, <em>Why it matters</em>, <em>What to do now</em>, and <em>When to tell Earth</em>.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setResourcesModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-space-950/90 border border-cyan-500/40 text-xs font-mono text-cyan-300 hover:bg-space-850 transition-colors shadow-sm"
+            >
+              <BookOpen className="w-4 h-4 text-cyan-400" />
+              <span>NASA Resources Map</span>
+            </button>
             <button
               onClick={() => setSbarModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-space-950/90 border border-slate-800 text-xs font-mono text-cyan-300 hover:bg-space-850 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-space-950/90 border border-slate-800 text-xs font-mono text-slate-300 hover:text-cyan-300 hover:bg-space-850 transition-colors"
             >
               <FileText className="w-4 h-4" />
               <span>Preview SBAR Packet</span>
@@ -164,7 +192,7 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search guidance rules, protocols, or actions..."
+            placeholder="Search by NASA Hazard, Risk, Protocol, or Countermeasure..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-space-950/80 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 font-mono"
@@ -188,7 +216,7 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
         </div>
       </div>
 
-      {/* Guidance Cards Grid */}
+      {/* Guidance Cards Grid — Structured 4-Field Format */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredItems.map((item) => {
           const isAcknowledged = acknowledgedRules[item.rule.id];
@@ -197,7 +225,7 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
               key={item.rule.id}
               glow={item.rule.level === 'RED' ? 'red' : item.rule.level === 'YELLOW' ? 'yellow' : 'green'}
               title={item.rule.title}
-              subtitle={`${item.indicator.displayName} • ${item.indicator.valueDisplay}`}
+              subtitle={`${item.indicator.displayName} • Reading: ${item.indicator.valueDisplay}`}
               icon={<ShieldAlert className="w-4 h-4 text-cyan-400" />}
               headerSlot={
                 <div className="flex items-center gap-2">
@@ -217,17 +245,55 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
                 </div>
               }
             >
-              <div className="space-y-4 text-xs font-sans">
-                {/* Observation reason */}
-                <p className="text-slate-300 leading-relaxed font-mono text-[11px] bg-space-950/60 p-2.5 rounded-lg border border-slate-850">
-                  {item.indicator.reason}
-                </p>
+              <div className="space-y-3.5 text-xs font-sans">
+                {/* NASA Hazard & Risk Badges */}
+                <div className="flex flex-wrap items-center gap-2 pb-1 border-b border-slate-800/80 font-mono text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-space-900 border border-cyan-500/30 text-cyan-300">
+                    Hazard: {item.rule.nasaHazard || 'Gravity Fields'}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-space-900 border border-indigo-500/30 text-indigo-300">
+                    Risk: {item.rule.nasaRisk || 'Cardiovascular Adaptations'}
+                  </span>
+                </div>
 
-                {/* Primary Action Checklist */}
-                <div>
-                  <h4 className="font-bold text-slate-200 mb-2 font-mono uppercase text-[11px]">Recommended Countermeasures:</h4>
-                  <div className="space-y-1.5">
-                    {item.rule.actions.map((act, idx) => {
+                {/* 1. What Happened */}
+                <div className="p-2.5 rounded-lg bg-space-950/80 border border-slate-800 space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                    1. What Happened
+                  </span>
+                  <p className="text-slate-200 leading-relaxed font-sans text-xs">
+                    {item.rule.whatHappened || item.indicator.reason}
+                  </p>
+                </div>
+
+                {/* 2. Why It Matters */}
+                <div className="p-2.5 rounded-lg bg-space-950/80 border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider block">
+                      2. Why It Matters (NASA Risk Analysis)
+                    </span>
+                    <a
+                      href={item.rule.nasaRiskUrl || "https://www.nasa.gov/hrp/risks"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-0.5 font-mono"
+                    >
+                      <span>NASA Risk Page</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed font-sans text-xs">
+                    {item.rule.whyItMatters || 'Microgravity adaptations alter autonomic regulation, requiring active countermeasure compliance.'}
+                  </p>
+                </div>
+
+                {/* 3. What To Do Now (Action Checklist) */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                    3. What To Do Now (Countermeasures Checklist)
+                  </span>
+                  <div className="space-y-1">
+                    {(item.rule.whatToDoNow || item.rule.actions).map((act, idx) => {
                       const checked = checkedActions[`${item.rule.id}-${idx}`];
                       return (
                         <div
@@ -236,11 +302,11 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
                           className="flex items-start gap-2 p-2 rounded-lg bg-space-900/40 hover:bg-space-900/80 cursor-pointer transition-colors"
                         >
                           {checked ? (
-                            <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                            <CheckSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                           ) : (
-                            <Square className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                            <Square className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5" />
                           )}
-                          <span className={checked ? 'line-through text-slate-500' : 'text-slate-200'}>
+                          <span className={checked ? 'line-through text-slate-500 text-xs' : 'text-slate-200 text-xs'}>
                             {act}
                           </span>
                         </div>
@@ -249,7 +315,18 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
                   </div>
                 </div>
 
-                {/* Body map link & Evidence Disclosure */}
+                {/* 4. When To Tell Earth */}
+                <div className="p-2.5 rounded-lg bg-blue-950/20 border border-blue-500/20 space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-blue-300 uppercase tracking-wider block flex items-center gap-1.5">
+                    <Radio className="w-3 h-3 text-blue-400" />
+                    4. When To Tell Earth
+                  </span>
+                  <p className="text-slate-300 font-sans text-xs">
+                    {item.rule.whenToTellEarth || item.rule.whenToContactFlightSurgeon}
+                  </p>
+                </div>
+
+                {/* Card Footer: Body Map Link & Scientific Citation */}
                 <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-[11px] font-mono">
                   <button
                     onClick={() => onNavigateToBodyMap(item.rule.relatedBodyPartId)}
@@ -258,7 +335,9 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
                     <Target className="w-3.5 h-3.5" />
                     <span>View on Body Map</span>
                   </button>
-                  <span className="text-slate-500">Source: {item.rule.source}</span>
+                  <span className="text-slate-500 truncate max-w-[220px]" title={item.rule.source}>
+                    Source: {item.rule.source}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -271,7 +350,7 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
         <Modal
           isOpen={sbarModalOpen}
           onClose={() => setSbarModalOpen(false)}
-          title="Clinical SBAR Medical Telemetry Packet"
+          title="Clinical SBAR Medical Telemetry Packet (NASA EIMO 2023)"
           maxWidth="lg"
         >
           <div className="space-y-4 text-xs font-mono">
@@ -300,6 +379,9 @@ Notice: Operational decision-support prototype. Requires flight surgeon authoriz
           </div>
         </Modal>
       )}
+
+      {/* Official Challenge Resources Modal */}
+      <NasaResourcesModal isOpen={resourcesModalOpen} onClose={() => setResourcesModalOpen(false)} />
     </div>
   );
 };

@@ -25,3 +25,4 @@ Compliant with Section 4 and Section 15.2 of `PLAN.md`.
 3. **Adapters (`SimulationSource` & `WebSocketSource`)**:
    - `SimulationSource`: 100% in-browser offline simulation streaming 10-sample chunks every 40 ms with RR interval modulation.
    - `WebSocketSource`: Connects to local or remote WebSocket telemetry gateways (`ws://localhost:8787/telemetry`) with automatic reconnect backoff.
+

@@ -12,7 +12,10 @@ export type IndicatorKey =
   | 'bloodSugar'
   | 'bodyTemperature'
   | 'sleepDuration'
-  | 'mood';
+  | 'mood'
+  | 'cabinCO2'
+  | 'radiationDose'
+  | 'visionHeadache';
 
 /** System grouping for sidebar chip display */
 export type BodySystem =

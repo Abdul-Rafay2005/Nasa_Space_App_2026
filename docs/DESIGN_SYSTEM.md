@@ -41,3 +41,4 @@ The Aegis Health visual language is built for operational mission readiness. It 
 3. **Longitudinal Trends**: Recharts multi-interval explorer (`15m`, `1h`, `24h`, `7d`, `All`), dynamic threshold reference areas, and accessible data table toggles.
 4. **Daily Check-in**: 3-stage guided flow (Capture Biometrics → Wellbeing → Review & Save) with live stream snapshot button.
 5. **Guidance & Alerts**: Clinical decision-support rules, interactive countermeasure checklists, local incident acknowledgement, and honest SBAR summary packet exports.
+

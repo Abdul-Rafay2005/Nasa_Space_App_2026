@@ -28,6 +28,7 @@ export interface AssessmentFormValues {
   bodyTemperature: string; // °C
   sleepDuration: string; // Hours
   mood: MoodType;
+  visionHeadache?: 'no' | 'yes'; // SANS check (NASA HRP)
   notes?: string;
 }
 
@@ -39,11 +40,12 @@ export interface ParsedAssessmentValues {
   bodyTemperature: number;
   sleepDuration: number;
   mood: MoodType;
+  visionHeadache?: 'no' | 'yes';
   notes?: string;
 }
 
 export interface IndicatorResult {
-  indicatorId: 'heartRate' | 'bloodPressure' | 'bloodSugar' | 'bodyTemperature' | 'sleepDuration' | 'mood';
+  indicatorId: 'heartRate' | 'bloodPressure' | 'bloodSugar' | 'bodyTemperature' | 'sleepDuration' | 'mood' | 'cabinCO2' | 'radiationDose' | 'visionHeadache';
   displayName: string;
   valueDisplay: string;
   numericValue?: number;
@@ -56,6 +58,9 @@ export interface IndicatorResult {
   baselineNominal?: string;
   deviationPercent?: number;
   criticality: 'low' | 'medium' | 'high';
+  nasaHazard?: string;
+  nasaRisk?: string;
+  sourceCitation?: string;
 }
 
 export interface OverallHealthResult {
@@ -83,6 +88,10 @@ export interface DailyAssessmentRecord {
     bodyTemperature: IndicatorResult;
     sleepDuration: IndicatorResult;
     mood: IndicatorResult;
+    cabinCO2?: IndicatorResult;
+    radiationDose?: IndicatorResult;
+    visionHeadache?: IndicatorResult;
+    [key: string]: IndicatorResult | undefined;
   };
   overall: OverallHealthResult;
   isDemonstrationData?: boolean;
@@ -120,6 +129,10 @@ export interface IndicatorThresholdSet {
   redCriticalHigh: number;
   description: string;
   medicalContext: string;
+  nasaHazard?: string;
+  nasaRisk?: string;
+  basis?: string;
+  neutronSharePercent?: number;
 }
 
 export interface BloodPressureThresholdSet {
@@ -141,6 +154,9 @@ export interface BloodPressureThresholdSet {
   };
   description: string;
   medicalContext: string;
+  nasaHazard?: string;
+  nasaRisk?: string;
+  basis?: string;
 }
 
 export interface MasterHealthThresholds {
@@ -153,6 +169,8 @@ export interface MasterHealthThresholds {
   bloodSugar: IndicatorThresholdSet;
   bodyTemperature: IndicatorThresholdSet;
   sleepDuration: IndicatorThresholdSet;
+  cabinCO2?: IndicatorThresholdSet;
+  radiationDose?: IndicatorThresholdSet;
   moodMap: Record<MoodType, { status: HealthStatus; description: string }>;
 }
 

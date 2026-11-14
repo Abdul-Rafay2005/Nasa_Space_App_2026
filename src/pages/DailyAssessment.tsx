@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ArrowLeft,
   FileCheck,
+  Eye,
 } from 'lucide-react';
 import {
   DailyAssessmentRecord,
@@ -57,6 +58,7 @@ export const DailyAssessment: React.FC<DailyAssessmentProps> = ({
   const [bodyTemperature, setBodyTemperature] = useState<string>('');
   const [sleepDuration, setSleepDuration] = useState<string>('7.5');
   const [mood, setMood] = useState<MoodType>('good');
+  const [visionHeadache, setVisionHeadache] = useState<'no' | 'yes'>('no');
   const [notes, setNotes] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -160,6 +162,7 @@ export const DailyAssessment: React.FC<DailyAssessmentProps> = ({
       bodyTemperature: Number(bodyTemperature),
       sleepDuration: Number(sleepDuration) || 7.5,
       mood,
+      visionHeadache,
       notes: notes.trim() || undefined,
     };
 
@@ -491,6 +494,46 @@ export const DailyAssessment: React.FC<DailyAssessmentProps> = ({
                 />
               </div>
 
+              {/* SANS Vision & Headache Check (NASA HRP Protocol) */}
+              <div className="p-3.5 rounded-xl bg-space-900/60 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-200 font-sans">
+                    <Eye className="w-4 h-4 text-cyan-400" />
+                    Vision & Headache Check (NASA SANS Protocol)
+                  </label>
+                  <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30">
+                    Hazard: Hostile/Gravity
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-sans">
+                  Did you experience blurred vision, visual acuity changes, or persistent headache today?
+                </p>
+                <div className="flex gap-2 pt-1 font-mono text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setVisionHeadache('no')}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all ${
+                      visionHeadache === 'no'
+                        ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                        : 'bg-space-950 border border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    No (Nominal Acuity)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisionHeadache('yes')}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all ${
+                      visionHeadache === 'yes'
+                        ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
+                        : 'bg-space-950 border border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Yes (Acuity Blur / Headache Observed)
+                  </button>
+                </div>
+              </div>
+
               {/* Notes */}
               <div>
                 <label className="block text-sm font-bold text-slate-200 font-sans mb-1">
@@ -560,6 +603,12 @@ export const DailyAssessment: React.FC<DailyAssessmentProps> = ({
                 <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
                   <span className="text-[10px] text-slate-400 block">MOOD</span>
                   <span className="text-slate-100 font-bold capitalize">{mood}</span>
+                </div>
+                <div className="p-2.5 rounded bg-space-900/60 border border-slate-850">
+                  <span className="text-[10px] text-slate-400 block">SANS / VISION</span>
+                  <span className={`font-bold ${visionHeadache === 'yes' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {visionHeadache === 'yes' ? '⚠ Blurring / Headache' : '✓ Nominal'}
+                  </span>
                 </div>
               </div>
 

@@ -48,3 +48,4 @@ export function subscribeToRoute(callback: (route: AppRoute) => void): () => voi
   window.addEventListener('hashchange', handler);
   return () => window.removeEventListener('hashchange', handler);
 }
+

@@ -10,3 +10,4 @@ export interface IngressMessage {
   type: 'waveform' | 'measurement' | 'heartbeat' | 'subscribe' | 'descriptor';
   [key: string]: unknown;
 }
+

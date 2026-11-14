@@ -94,3 +94,4 @@ export function acknowledgeIncident(id: string): void {
     }
   }
 }
+

@@ -51,3 +51,4 @@ This runbook guides evaluators and judges through the runtime features of Aegis 
 1. Click **Settings / Sources**.
 2. Review the active simulation engine statistics (sample rate, chunks received, buffer occupancy).
 3. Notice the **Hardware / Network Gateway** connection option (`ws://localhost:8787/telemetry`) backed by the documented protocol in `docs/SENSOR_PROTOCOL.md`.
+

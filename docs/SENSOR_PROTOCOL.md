@@ -62,3 +62,4 @@ Transmitted at 1 Hz or on spot reading acquisition:
   }
 }
 ```
+

@@ -1,7 +1,7 @@
 /**
  * NASA Space Apps Challenge 2026 — Astronaut Health Monitoring Software
  * Module: Flight Surgeon Guidance Engine Types
- * Second Developer: Sameen (Phase 2 Clinical Decision Support)
+ * Updated: 14 November 2026 per Official NASA & CSA Research Report (Eman Saleem)
  */
 
 import { HealthStatus, IndicatorResult } from './health';
@@ -15,6 +15,13 @@ export interface GuidanceRule {
   level: GuidanceLevel;
   levelLabel: string;
   title: string;
+  whatHappened?: string;
+  whyItMatters?: string;
+  whatToDoNow?: string[];
+  whenToTellEarth?: string;
+  nasaHazard?: string;
+  nasaRisk?: string;
+  nasaRiskUrl?: string;
   actions: string[];
   whenToContactFlightSurgeon: string;
   remeasureIntervalHours?: number;
@@ -41,4 +48,3 @@ export interface GuidanceEngineResult {
   };
   items: ActiveGuidanceItem[];
 }
-

@@ -10,6 +10,8 @@ import { AssessmentDetailModal } from '../components/health/AssessmentDetailModa
 import { analyzePhysiologicalDrift, DriftAlert } from '../services/driftDetection';
 import { LiveWaveform } from '../components/telemetry/LiveWaveform';
 import { useTelemetrySnapshot } from '../stores/telemetryStore';
+import { useGroundLink } from '../stores/groundLinkStore';
+import { NasaResourcesModal } from '../components/common/NasaResourcesModal';
 import {
   Heart,
   Droplets,
@@ -21,6 +23,11 @@ import {
   FileText,
   X,
   ArrowRight,
+  Radio,
+  BookOpen,
+  Wind,
+  Shield,
+  Activity,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -53,6 +60,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [modalRecord, setModalRecord] = useState<DailyAssessmentRecord | null>(null);
   const [selectedSbarAlert, setSelectedSbarAlert] = useState<DriftAlert | null>(null);
   const [showAlertModal, setShowAlertModal] = useState<boolean>(false);
+  const [resourcesModalOpen, setResourcesModalOpen] = useState<boolean>(false);
+
+  // Ground Link State (NASA EIMO 2023 Mars Delay & Earth Signal Off mode)
+  const [groundLink, setGroundLinkMode] = useGroundLink();
 
   // Live real-time telemetry stream from shared Telemetry Store
   const snapshot = useTelemetrySnapshot();
@@ -80,19 +91,57 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="relative min-h-screen space-y-6 animate-fade-in pb-16 select-none overflow-hidden">
 
-      {/* ── 1. Top Greeting Header (Exact 01_dashboard.png) ──────────────── */}
+      {/* ── 1. Top Greeting Header (Exact 01_dashboard.png + NASA EIMO Controls) ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-sans tracking-tight flex items-center gap-2">
             Hello, Astronaut! <span className="inline-block animate-bounce">👋</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 font-sans mt-0.5">
-            Here's your health overview for today
+            Here's your health overview for today • Onboard Autonomous Decision Support
           </p>
         </div>
 
-        {/* Right Header Badges: Mission Day + Notification Bell */}
-        <div className="flex items-center gap-3">
+        {/* Right Header Badges: Ground Link Mode + Mission Day + NASA Resources */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Ground Link Selector (NASA EIMO 2023 Mars Delay Feature) */}
+          <div className="flex items-center bg-[#0b132c]/90 p-0.5 rounded-full border border-cyan-500/30 text-[11px] font-mono shadow-lg backdrop-blur-md">
+            <button
+              onClick={() => setGroundLinkMode('direct')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${
+                groundLink.mode === 'direct'
+                  ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Real-time Deep Space Network Earth Uplink Active"
+            >
+              <Radio className="w-3 h-3 text-emerald-400" />
+              <span>DSN Online</span>
+            </button>
+            <button
+              onClick={() => setGroundLinkMode('mars_delay')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${
+                groundLink.mode === 'mars_delay'
+                  ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Simulates Mars 22-min speed-of-light comm delay (NASA EIMO 2023 protocol)"
+            >
+              <Radio className="w-3 h-3 text-amber-400" />
+              <span>Mars Delay (22m)</span>
+            </button>
+          </div>
+
+          {/* NASA Official Resources Modal Trigger */}
+          <button
+            onClick={() => setResourcesModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0b132c]/90 border border-cyan-500/40 text-xs font-mono text-cyan-300 hover:bg-space-850 transition-colors shadow-lg backdrop-blur-md"
+            title="Inspect 5 Official NASA & CSA Challenge Resources"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">NASA Resources</span>
+          </button>
+
           {/* Mission Day Pill */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0b132c]/90 border border-cyan-500/30 text-white font-sans text-xs font-semibold shadow-lg backdrop-blur-md">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
@@ -112,6 +161,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Mars Earth-Independent Autonomous Mode Banner (When Delay Enabled) */}
+      {groundLink.mode === 'mars_delay' && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/60 via-amber-900/30 to-amber-950/60 border border-amber-500/40 text-amber-200 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xl animate-fade-in backdrop-blur-md">
+          <div className="flex items-center gap-2.5">
+            <Radio className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+            <span>
+              <strong>MARS AUTONOMOUS MODE ACTIVE:</strong> Speed-of-light Earth comm delay is ~22 minutes (NASA EIMO 2023). All clinical guidance & SBAR decisions are operating 100% onboard.
+            </span>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] shrink-0">
+            Local IndexedDB Buffered ({groundLink.queuedTelemetryCount} packets)
+          </span>
+        </div>
+      )}
 
       {/* ── 2. Top Row: 3 Hero Cards (Health Score | Overall Status | Astronaut) ── */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
@@ -359,6 +423,54 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
           </div>
+
+          {/* Environmental Hazards & Space Radiation Strip (NASA-STD-3001 & CSA CANS) */}
+          <div className="mt-4 pt-3.5 border-t border-[#172242] grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-2xl bg-[#070b1a]/90 border border-[#172242] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                  <Wind className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Cabin CO2 (1-hr Avg)</span>
+                  <span className="text-sm font-black font-mono text-slate-100">2.8 <span className="text-xs text-slate-400 font-normal">mmHg</span></span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                ≤3.0 Nominal
+              </span>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#070b1a]/90 border border-[#172242] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Career Radiation</span>
+                  <span className="text-sm font-black font-mono text-slate-100">142 <span className="text-xs text-slate-400 font-normal">mSv</span></span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-indigo-500/15 border border-indigo-500/30 text-indigo-300" title="CSA CANS autonomous spectrometer: ~30% neutron fraction">
+                30% Neutrons (CSA)
+              </span>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#070b1a]/90 border border-[#172242] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Blood Oxygen (SpO2)</span>
+                  <span className="text-sm font-black font-mono text-slate-100">98 <span className="text-xs text-slate-400 font-normal">%</span></span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                NEWS2 Nominal
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* ── Right: Recent Alerts Card (lg:col-span-4) ────────────────────── */}
@@ -537,6 +649,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         record={modalRecord}
         isOpen={!!modalRecord}
         onClose={() => setModalRecord(null)}
+      />
+
+      {/* ── 9. Official Challenge Resources Modal ───────────────────────── */}
+      <NasaResourcesModal
+        isOpen={resourcesModalOpen}
+        onClose={() => setResourcesModalOpen(false)}
       />
 
     </div>

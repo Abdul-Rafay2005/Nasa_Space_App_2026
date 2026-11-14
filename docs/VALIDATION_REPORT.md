@@ -48,3 +48,4 @@ In accordance with Section 2.4 and Section 8.2 of `PLAN.md`:
   - `dist/assets/index-*.css` (59.96 kB)
   - `dist/assets/index-*.js` (1,399.04 kB)
 - **Deployment Compatibility**: Ready for static SPA hosting on Vercel with `vercel.json` rewrites.
+
