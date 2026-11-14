@@ -127,8 +127,12 @@ export const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({
         <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
-            <p className="font-semibold text-blue-200">Free Google Gemini API</p>
-            <p className="text-slate-400">Get a free API key from Google AI Studio. Your key is stored locally in your browser only — never sent anywhere except Google's servers.</p>
+            <p className="font-semibold text-blue-200">
+              {import.meta.env.VITE_GEMINI_API_KEY ? '✅ Key loaded from .env file' : 'Store in .env file (Recommended)'}
+            </p>
+            <p className="text-slate-400">
+              Add <code className="text-cyan-300 font-mono">VITE_GEMINI_API_KEY=your_key</code> to your <code className="text-cyan-300 font-mono">.env</code> file in the project folder. Vite will load it automatically without needing any web input.
+            </p>
             <a
               href="https://aistudio.google.com/app/apikey"
               target="_blank"

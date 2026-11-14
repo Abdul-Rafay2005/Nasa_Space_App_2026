@@ -263,14 +263,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <div className="mx-4 mt-3 px-4 py-3 rounded-xl bg-amber-500/8 border border-amber-500/25 text-xs text-amber-200 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
-            <span><strong>Offline Mode:</strong> Add your free Gemini API key to enable live AI reasoning from Google.</span>
+            <span><strong>Offline Mode:</strong> Add your Gemini API key in <code>.env</code> (<code>VITE_GEMINI_API_KEY=...</code>) to enable live AI reasoning.</span>
           </div>
           <button
             type="button"
             onClick={() => setIsKeyModalOpen(true)}
             className="shrink-0 px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-200 font-semibold text-xs transition-colors"
           >
-            Add Key
+            Details
           </button>
         </div>
       )}

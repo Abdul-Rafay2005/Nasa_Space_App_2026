@@ -23,17 +23,23 @@ export const DEFAULT_MODEL = 'gemini-2.0-flash';
  * keys saved after the page loaded (no stale closures).
  */
 export function getGeminiApiKey(): string {
+  // 1. Prioritize .env file via Vite literal replacement
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (typeof envKey === 'string' && envKey.trim().length > 5) {
+    return envKey.trim();
+  }
+
+  // 2. Secondary fallback: check browser localStorage
   try {
     const stored = localStorage.getItem(API_KEY_STORAGE);
-    if (stored && stored.trim().length > 10) {
+    if (stored && stored.trim().length > 5) {
       return stored.trim();
     }
   } catch {
     // Non-blocking
   }
-  // Fallback to Vite env if configured at build time
-  const envKey = (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } }).env?.VITE_GEMINI_API_KEY;
-  return envKey?.trim() || '';
+
+  return '';
 }
 
 export function saveGeminiApiKey(key: string): void {
@@ -53,6 +59,13 @@ export function clearGeminiApiKey(): void {
 }
 
 export function getGeminiModel(): string {
+  // 1. Check .env model
+  const envModel = import.meta.env.VITE_GEMINI_MODEL;
+  if (typeof envModel === 'string' && envModel.trim().length > 0) {
+    return envModel.trim();
+  }
+
+  // 2. Check localStorage
   try {
     const stored = localStorage.getItem(MODEL_STORAGE);
     if (stored && stored.trim().length > 0) {
