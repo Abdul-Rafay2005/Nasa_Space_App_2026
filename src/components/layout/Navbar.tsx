@@ -4,23 +4,29 @@
  * UI Design: Matches 01_dashboard.png & 08_dashboard_full_concept.png
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Menu, Calendar, RotateCcw, User, ShieldAlert } from 'lucide-react';
 import { MEDICAL_DISCLAIMER } from '../../config/thresholds';
+import { NotificationPanel } from './NotificationPanel';
+import { useNotifications } from '../../stores/notificationStore';
 
 interface NavbarProps {
   onOpenMobileMenu: () => void;
   onResetData: () => void;
   missionDay: number;
+  onNavigateToGuidance?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenMobileMenu,
   onResetData,
   missionDay,
+  onNavigateToGuidance,
 }) => {
   const [utcTime, setUtcTime] = useState('');
-  const [hasAlerts] = useState(true);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const bellButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     const update = () => {
@@ -109,13 +115,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Notification Bell */}
           <button
-            className="relative p-2 rounded-full bg-[#0e1738] border border-[#1e2e5c] text-slate-300 hover:text-white hover:bg-[#152354] transition-all"
+            ref={bellButtonRef}
+            onClick={() => setIsNotificationOpen((prev) => !prev)}
+            className={`relative p-2 rounded-full border transition-all ${
+              isNotificationOpen
+                ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-900/40 ring-2 ring-cyan-500/30'
+                : 'bg-[#0e1738] border-[#1e2e5c] text-slate-300 hover:text-white hover:bg-[#152354]'
+            }`}
             aria-label="Notifications"
+            aria-expanded={isNotificationOpen}
+            aria-haspopup="dialog"
+            title="Notifications & Alerts"
           >
             <Bell className="w-4 h-4" />
-            {hasAlerts && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-400 ring-2 ring-[#070b1a]" />
-            )}
+            {unreadCount > 1 ? (
+              <span className="absolute -top-1 -right-1 px-1.5 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white font-mono text-[10px] font-bold flex items-center justify-center ring-2 ring-[#070b1a] shadow-sm animate-pulse">
+                {unreadCount}
+              </span>
+            ) : unreadCount === 1 ? (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-[#070b1a] animate-pulse" />
+            ) : null}
           </button>
 
           {/* User Avatar Circle */}
@@ -126,6 +145,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
       </div>
+
+      {/* Fixed Portal Notification Panel */}
+      <NotificationPanel
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        anchorRef={bellButtonRef}
+        onNavigateToGuidance={onNavigateToGuidance}
+      />
     </header>
   );
 };

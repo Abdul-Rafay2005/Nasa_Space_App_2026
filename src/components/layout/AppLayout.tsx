@@ -50,6 +50,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onResetData={onResetData}
           missionDay={astronautProfile.currentMissionDay}
+          onNavigateToGuidance={() => onSelectPage('guidance')}
         />
 
         {/* Scrollable Page Body */}

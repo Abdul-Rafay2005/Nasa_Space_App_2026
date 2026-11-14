@@ -19,6 +19,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
 import { acknowledgeIncident } from '../services/alertEngine';
+import { markNotificationAsReadByRuleId } from '../stores/notificationStore';
 import { NasaResourcesModal } from '../components/common/NasaResourcesModal';
 import {
   ShieldAlert,
@@ -73,6 +74,7 @@ export const FlightSurgeonGuidancePage: React.FC<FlightSurgeonGuidancePageProps>
   const handleAcknowledge = (ruleId: string) => {
     setAcknowledgedRules((prev) => ({ ...prev, [ruleId]: true }));
     acknowledgeIncident(ruleId);
+    markNotificationAsReadByRuleId(ruleId);
   };
 
   const filteredItems = useMemo(() => {

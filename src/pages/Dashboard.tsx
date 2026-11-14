@@ -19,7 +19,6 @@ import {
   Thermometer,
   Moon,
   CheckCircle,
-  Bell,
   FileText,
   X,
   ArrowRight,
@@ -62,7 +61,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const [modalRecord, setModalRecord] = useState<DailyAssessmentRecord | null>(null);
   const [selectedSbarAlert, setSelectedSbarAlert] = useState<DriftAlert | null>(null);
-  const [showAlertModal, setShowAlertModal] = useState<boolean>(false);
   const [resourcesModalOpen, setResourcesModalOpen] = useState<boolean>(false);
 
   // Ground Link State (NASA EIMO 2023 Mars Delay & Earth Signal Off mode)
@@ -162,18 +160,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
             <span>Mission Day {profile.currentMissionDay || 48}</span>
           </div>
-
-          {/* Notification Bell */}
-          <button
-            onClick={() => setShowAlertModal(true)}
-            className="relative w-9 h-9 rounded-full bg-[#0b132c]/90 border border-cyan-500/30 flex items-center justify-center text-slate-300 hover:text-white hover:border-cyan-400 transition-all shadow-lg backdrop-blur-md"
-            title="Mission Notifications & Alerts"
-          >
-            <Bell className="w-4 h-4" />
-            {driftAlerts.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#0b132c]" />
-            )}
-          </button>
         </div>
       </div>
 
@@ -606,55 +592,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 Transmit SBAR Uplink
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 7. Notification Center Modal ─────────────────────────────────── */}
-      {showAlertModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-[#0b1228] border border-cyan-500/40 p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1b2752] pb-3">
-              <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-sm font-bold text-white uppercase font-mono tracking-wider">
-                  Mission Notifications
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowAlertModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {driftAlerts.length > 0 ? (
-                driftAlerts.map((alert) => (
-                  <div key={alert.id} className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-amber-300">{alert.title}</span>
-                      <span className="text-[10px] font-mono text-amber-400">{alert.detectedChange}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300">{alert.description}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6 space-y-2">
-                  <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
-                  <p className="text-sm font-bold text-white">All Telemetry Nominal</p>
-                  <p className="text-xs text-slate-400">No active biometric flight rule violations.</p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowAlertModal(false)}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-mono text-xs font-bold"
-            >
-              Acknowledge
-            </button>
           </div>
         </div>
       )}
