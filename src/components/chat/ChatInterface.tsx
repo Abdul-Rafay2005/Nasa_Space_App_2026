@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Wifi,
   WifiOff,
+  Pill,
 } from 'lucide-react';
 import { ChatMessage } from '../../types/chat';
 import { AstronautProfile, DailyAssessmentRecord } from '../../types/health';
@@ -28,6 +29,7 @@ import {
   saveChatHistory,
 } from '../../services/geminiChatService';
 import { GeminiApiKeyModal } from './GeminiApiKeyModal';
+import { ReferenceCountermeasuresModal } from './ReferenceCountermeasuresModal';
 import { MarkdownMessage } from './MarkdownMessage';
 import { getGroundLinkState } from '../../stores/groundLinkStore';
 
@@ -40,6 +42,7 @@ interface ChatInterfaceProps {
 }
 
 const QUICK_PROMPTS = [
+  { emoji: '💊', label: 'Reference Meds', text: 'Which medications and countermeasures are used for each medical issue according to the NASA reference document?' },
   { emoji: '📊', label: 'Health Summary', text: 'Summarize my health status and mission readiness for today' },
   { emoji: '❤️', label: 'Cardiovascular', text: 'Analyze my heart rate and blood pressure compared to my pre-flight baseline' },
   { emoji: '🛡️', label: 'Radiation & CO₂', text: 'What are my current radiation dose and cabin CO2 exposure levels?' },
@@ -95,6 +98,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [inputPrompt, setInputPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [isMedModalOpen, setIsMedModalOpen] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   // Track model — refreshed after key save
   const [activeModel, setActiveModel] = useState(() => getGeminiModel());
@@ -221,6 +225,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
         {/* Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Reference Countermeasures & Medications Table Pill */}
+          <button
+            type="button"
+            onClick={() => setIsMedModalOpen(true)}
+            title="Inspect NASA Reference Medications & Countermeasures Table"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20 transition-all"
+          >
+            <Pill className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Reference Meds</span>
+          </button>
+
           {/* API Key pill — shows model if connected, warning pulse if not */}
           <button
             type="button"
@@ -439,6 +454,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         isOpen={isKeyModalOpen}
         onClose={() => setIsKeyModalOpen(false)}
         onKeyUpdated={refreshKeyState}
+      />
+
+      {/* NASA Reference Countermeasures & Medications Modal */}
+      <ReferenceCountermeasuresModal
+        isOpen={isMedModalOpen}
+        onClose={() => setIsMedModalOpen(false)}
+        onAskDrOrion={handleSend}
       />
     </div>
   );

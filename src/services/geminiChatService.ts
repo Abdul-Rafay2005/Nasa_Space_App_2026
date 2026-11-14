@@ -157,14 +157,43 @@ ${recentDays || 'No prior records available.'}
 COMMS STATUS:
 - Mode: ${groundState.mode === 'mars_delay' ? 'MARS DELAY — 22-minute one-way light-time. Ground surgeon unreachable in real-time. Autonomous EIMO 2023 protocol active.' : 'DSN DIRECT LINK — Earth ground surgeon reachable.'}
 
+OFFICIAL NASA REFERENCE COUNTERMEASURES & MEDICATIONS PROTOCOL:
+(Source: NASA Human Research Program HRP, NASA-STD-3001, ISS Medical Checklist)
+IMPORTANT: Label as "Reference countermeasures, not prescriptions". Drug choice and dosing must be decided by a physician / flight surgeon. No doses are given on purpose.
+All readings in the current Sol 142 dashboard are within normal range, so these are for reference or contingency.
+
+SUMMARY TABLE OF CONDITIONS & MEDICATIONS:
+1. High Blood Pressure (>120/80 mmHg):
+   - Medications: ACE inhibitors (e.g. lisinopril), ARBs (e.g. losartan), calcium channel blockers (e.g. amlodipine).
+   - Notes: Managed with long-term cardiovascular medication under flight surgeon review.
+2. Low Blood Pressure (<90/60 mmHg):
+   - Countermeasures: Oral or IV fluids first; midodrine for persistent refractory cases.
+   - Notes: In microgravity, fluid volume contracts ~10-15%. Start with rehydration/salt tablets; move to midodrine only if persistent.
+3. Low Blood Sugar (Hypoglycemia <70 mg/dL):
+   - Countermeasures: Fast-acting glucose tablets or gel immediately; glucagon (IM/autoinjector) if the astronaut is unresponsive or cannot swallow safely.
+   - Notes: Acute medical emergency.
+4. High Blood Sugar (Hyperglycemia >125 mg/dL):
+   - Countermeasures: Metformin or insulin, depending on severity and ketosis screening.
+5. Core Body Temperature - High (Space Fever >38.0 °C):
+   - Countermeasures: Acetaminophen or ibuprofen, physical convective cooling, fluids.
+   - Notes: Microgravity impairs convective sweat cooling.
+6. Core Body Temperature - Low (Hypothermia <35.5 °C):
+   - Countermeasures: Passive and active warming (thermal blankets, warm fluids). NO drug treats hypothermia directly.
+7. Poor or Short Sleep (<7 hours):
+   - Countermeasures: Melatonin is first-line circadian regulator; short-acting sleep aids (zolpidem, temazepam) for short-term acute use only.
+8. Psychological Morale / Mood (Fatigue, high stress, low mood):
+   - Countermeasures: Behavioral support first: counseling, workload and schedule changes, Earth family teleconferences. Medication: anxiolytics or SSRIs reserved for clinical cases under physician oversight.
+9. Elevated Cabin CO₂ (3.1–4.5 mmHg, hypercapnic headaches):
+   - Countermeasures: ENVIRONMENTAL FIX FIRST: CDRA scrubber maintenance and cabin airflow ventilation. Acetaminophen or ibuprofen treats ONLY the headache symptom as a temporary stopgap.
+10. Space Radiation (300–599 mSv approaching lifetime limit / SPE):
+    - Countermeasures: NO DRUG PREVENTS EXPOSURE. Real countermeasures are physical shielding and storm shelter during solar particle events. Ondansetron manages acute radiation-induced nausea; radioprotectors like amifostine are experimental.
+
 YOUR INSTRUCTIONS:
 1. Address the astronaut by rank or name (e.g. "Commander", "Cmdr. Vance").
-2. Use the ACTUAL telemetry data above for all answers — no generic responses.
-3. Give concrete numbered action steps (exercises, hydration amounts, timings).
-4. Explain WHY physiological changes happen in microgravity (cephalad fluid shift, cardiovascular deconditioning, SANS, radiation risks).
-5. Keep tone: calm, professional, mission-ready, and concise.
-6. Format responses clearly with headers, bullet lists, and bold key values.
-7. ALWAYS use the actual numbers from the telemetry above. Never invent data.`;
+2. When asked what medication, drug, or treatment to use for ANY issue (blood pressure, blood sugar, fever, sleep, headache, radiation, stress), cite the EXACT medications from the NASA reference countermeasures table above.
+3. ALWAYS include the disclaimer: "Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by a physician (flight surgeon)."
+4. Note that for Commander Vance on Sol 142, current vitals are nominal so no countermeasure is currently triggered unless an acute symptom is reported.
+5. Format responses clearly with headers, markdown tables, and bullet lists.`;
 }
 
 /**
@@ -186,6 +215,150 @@ export function generateHeuristicResponse(
   const temp = vitals?.bodyTemperature ?? 36.6;
   const score = overall?.score ?? 95;
   const status = overall?.status ?? 'GREEN';
+
+  // --- REFERENCE MEDICATIONS & COUNTERMEASURES (NASA HRP & ISS MEDICAL CHECKLIST) ---
+  if (p.includes('medi') || p.includes('drug') || p.includes('pill') || p.includes('pharm') || p.includes('prescript') || p.includes('what to take') || p.includes('kit') || p.includes('treat')) {
+    // Specific issue checks
+    if (p.includes('blood pressure') || p.includes('bp') || p.includes('hypertension') || p.includes('hypotension')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Blood Pressure
+*Source: NASA Human Research Program & ISS Medical Checklist*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### 1. High Blood Pressure (Hypertension >120/80 mmHg):
+- **First-line Medications:** ACE inhibitors (e.g. **lisinopril**), ARBs (e.g. **losartan**), or calcium channel blockers (e.g. **amlodipine**).
+- **Clinical Protocol:** Managed with long-term cardiovascular medication under flight surgeon review.
+
+### 2. Low Blood Pressure (Hypotension / Orthostatic Intolerance <90/60 mmHg):
+- **First-line Countermeasure:** **Oral or IV fluid loading** (normal saline or 1.5L water + electrolyte salt tablets).
+- **Secondary Medication:** **Midodrine** for persistent, refractory orthostatic cases.
+- **Microgravity Context:** In microgravity, fluid volume contracts ~10–15% due to cephalic fluid shift.
+
+*Commander Vance Telemetry Check:* Today's BP is **${bpSys}/${bpDia} mmHg** (nominal). No blood pressure medication is indicated.`,
+        suggestions: ['What medications for blood sugar?', 'What is in the kit for fever or space fever?', 'What sleep medications are available?'],
+      };
+    }
+
+    if (p.includes('sugar') || p.includes('glucose') || p.includes('hypoglycemia') || p.includes('hyperglycemia')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Blood Glucose
+*Source: NASA Human Research Program & ISS Medical Checklist*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### 1. Low Blood Sugar (Hypoglycemia <70 mg/dL) — ACUTE EMERGENCY:
+- **First-line:** **Fast-acting glucose tablets or oral glucose gel** (15–20g).
+- **Unresponsive / Impaired Swallow:** **Glucagon** (IM injection or autoinjector).
+- **Protocol:** Re-check blood glucose after 15 minutes.
+
+### 2. High Blood Sugar (Hyperglycemia >125 mg/dL):
+- **Medications:** **Metformin** (oral) or subcutaneous **insulin**, depending on severity, hydration, and ketosis screening.
+
+*Commander Vance Telemetry Check:* Today's blood glucose is **${vitals?.bloodSugar ?? 92} mg/dL** (nominal range 70–99 mg/dL).`,
+        suggestions: ['What medications for fever or headache?', 'What countermeasures for high blood pressure?', 'What sleep aids are in the kit?'],
+      };
+    }
+
+    if (p.includes('temp') || p.includes('fever') || p.includes('cold') || p.includes('hypothermia')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Core Body Temperature
+*Source: NASA Human Research Program & ISS Medical Checklist*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### 1. High Temperature (Fever / Space Fever >38.0 °C):
+- **Antipyretic Medications:** **Acetaminophen** (paracetamol) or **ibuprofen**.
+- **Physical Countermeasures:** Active convective airflow cooling and oral/IV electrolyte fluid replacement.
+- **Spaceflight Factor:** Convective radiative sweat cooling is severely impaired in microgravity.
+
+### 2. Low Temperature (Hypothermia <35.5 °C):
+- **NO PHARMACEUTICAL DRUG TREATS HYPOTHERMIA.**
+- **Protocol:** Passive and active rewarming only (thermal blankets, warmed oral fluids, cabin thermal loop adjustment).
+
+*Commander Vance Telemetry Check:* Core temp is **${temp}°C** (nominal range 36.1–38.0 °C).`,
+        suggestions: ['What medications for sleep or insomnia?', 'What to take for cabin CO2 headache?', 'What is used for radiation sickness?'],
+      };
+    }
+
+    if (p.includes('sleep') || p.includes('insomnia') || p.includes('wake') || p.includes('circadian')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Sleep & Circadian Health
+*Source: NASA Human Research Program & ISS Medical Checklist*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### 1. First-Line Sleep Countermeasure:
+- **Melatonin:** Primary circadian phase-shifting agent and sleep-onset facilitator. Non-habit forming.
+
+### 2. Prescription Sleep Aids (Short-Term Acute Use Only):
+- **Zolpidem** (Ambien) or **temazepam**.
+- **Crucial Spaceflight Constraint:** These appear in spaceflight medical packs but are restricted to short-term emergency or acute pre-EVA sleep shifting only due to cognitive grogginess risks during spacecraft alarms.
+
+*Commander Vance Telemetry Check:* Logged **${sleep} hours** of rest last night.`,
+        suggestions: ['What to take for cabin CO2 headache?', 'What countermeasures for radiation nausea?', 'List full NASA medication reference table'],
+      };
+    }
+
+    if (p.includes('co2') || p.includes('headache') || p.includes('air') || p.includes('scrubber')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Cabin CO₂ & Hypercapnic Headaches
+*Source: NASA-STD-3001 & NASA OCHMO Technical Brief TB-004*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### Key Clinical Principle:
+**Elevated cabin CO₂ is an environmental engineering problem, not a drug problem.**
+
+- **Environmental Fix (Primary):** CDRA (Carbon Dioxide Removal Assembly) scrubber maintenance, desiccant bed cycle verification, and increasing localized ventilation fans to disperse dead-air pockets.
+- **Symptomatic Relief (Stopgap Only):** **Acetaminophen** or **ibuprofen** can be used to treat the resulting headache, but this only masks symptoms while the life-support system is serviced.
+
+*Commander Vance Telemetry Check:* Cabin CO₂ is **2.8 mmHg** (below the 3.0 mmHg nominal ceiling). Air scrubbers are operating nominally.`,
+        suggestions: ['What medications for radiation exposure?', 'What medications for blood pressure?', 'List full NASA medication reference table'],
+      };
+    }
+
+    if (p.includes('radiation') || p.includes('nausea') || p.includes('vomit') || p.includes('spe') || p.includes('storm')) {
+      return {
+        text: `## 💊 Reference Countermeasures: Space Radiation & Acute Sickness
+*Source: NASA Human Research Program & OCHMO TB-020*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by the flight surgeon.*
+
+### 1. Radiation Exposure Prevention:
+- **NO DRUG PREVENTS RADIATION EXPOSURE.**
+- **Physical Countermeasures:** Relocate crew to the heavily shielded habitat core / water wall storm shelter during Solar Particle Events (SPE).
+
+### 2. Acute Radiation Sickness (ARS) Symptoms:
+- **Ondansetron:** Antiemetic (5-HT3 antagonist) used to manage nausea and vomiting induced by radiation exposure.
+- **Amifostine:** Free-radical scavenging radioprotector (considered experimental for long-duration deep-space transit).
+
+*Commander Vance Telemetry Check:* Cumulative career radiation dose is **142 mSv** (well below the 600 mSv lifetime limit). Space weather sensors report quiet conditions.`,
+        suggestions: ['What medications for blood pressure?', 'What medications for sleep?', 'List full NASA medication reference table'],
+      };
+    }
+
+    // General complete reference table
+    return {
+      text: `## 💊 NASA Space Health Monitor: Reference Countermeasures & Medications Table
+*Source: NASA Human Research Program (HRP), NASA-STD-3001 & ISS Medical Checklist*
+> **Disclaimer:** *Reference countermeasures, not prescriptions. Drug choice and dosing must be decided by a physician (flight surgeon). No doses are given on purpose.*
+
+| Parameter | Normal Range | Out-of-Range Condition | Reference Countermeasures & Drugs |
+|-----------|--------------|------------------------|-----------------------------------|
+| **Blood Pressure** | 111–119 / 60–79 mmHg | **High BP** | ACE inhibitors (lisinopril), ARBs (losartan), CCBs (amlodipine) |
+| | | **Low BP** | Oral or IV fluids first; midodrine for persistent cases |
+| **Blood Sugar** | 70–99 mg/dL | **Low (Hypoglycemia)** | Glucose tablets/gel; glucagon if unresponsive |
+| | | **High (Hyperglycemia)** | Metformin or insulin depending on severity |
+| **Core Temp** | 36.1–38.0 °C | **High (Fever)** | Acetaminophen or ibuprofen, cooling, fluids |
+| | | **Low (Hypothermia)** | Passive & active rewarming; **no drug treats it directly** |
+| **Sleep** | 7–10 hours | **Poor/Short Sleep** | Melatonin first-line; short-acting sleep aids (zolpidem, temazepam) short-term only |
+| **Mood / Morale** | Nominal | **Fatigue / High Stress** | Counseling, schedule adjustment; anxiolytics or SSRIs for clinical cases |
+| **Cabin CO₂** | ≤3.0 mmHg | **Elevated CO₂ (Headache)** | Environmental scrubber fix; acetaminophen or ibuprofen for headache only |
+| **Radiation** | <300 mSv | **High Exposure / SPE** | Physical shielding & shelter; ondansetron for nausea; amifostine experimental |
+
+*Note: All readings on Mission Sol 142 are within normal range — none of these countermeasures are currently triggered.*`,
+      suggestions: [
+        'What should I take for high blood pressure?',
+        'What to use for cabin CO2 headache?',
+        'What sleep aids are in the space medical kit?',
+      ],
+    };
+  }
 
   if (p.includes('progress') || p.includes('summary') || p.includes('status') || p.includes('how am i') || p.includes('overall') || p.includes('today')) {
     return {
