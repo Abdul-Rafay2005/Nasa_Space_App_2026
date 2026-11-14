@@ -30,3 +30,4 @@ export interface GeminiConfig {
   model: string;
   temperature: number;
 }
+

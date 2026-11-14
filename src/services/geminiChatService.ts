@@ -1,7 +1,7 @@
 /**
  * Aegis Health — Gemini AI Flight Surgeon Chatbot Service
  * Integrates Google Gemini API with Astronaut Clinical Telemetry Context
- * 
+ *
  * Compliant with:
  * - NASA-STD-3001 Technical Briefs (TB-004 CO2, TB-020 Radiation)
  * - NASA Human Research Roadmap (5 Hazards, 17 Risks)
@@ -16,26 +16,22 @@ const API_KEY_STORAGE = 'aegis_gemini_api_key_v1';
 const MODEL_STORAGE = 'aegis_gemini_model_v1';
 const CHAT_HISTORY_STORAGE = 'aegis_chat_history_v1';
 
-export const DEFAULT_MODEL = 'gemini-1.5-flash';
-export const AVAILABLE_MODELS = [
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Fast & Recommended)' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (Next-Gen High Performance)' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Deep Clinical Reasoning)' },
-];
+export const DEFAULT_MODEL = 'gemini-2.0-flash';
 
 /**
- * Get stored Gemini API Key from localStorage or Vite environment variable
+ * Get stored Gemini API Key — always reads live from localStorage so it reflects
+ * keys saved after the page loaded (no stale closures).
  */
 export function getGeminiApiKey(): string {
   try {
     const stored = localStorage.getItem(API_KEY_STORAGE);
-    if (stored && stored.trim().length > 0) {
+    if (stored && stored.trim().length > 10) {
       return stored.trim();
     }
   } catch {
     // Non-blocking
   }
-  // Fallback to Vite env if configured
+  // Fallback to Vite env if configured at build time
   const envKey = (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } }).env?.VITE_GEMINI_API_KEY;
   return envKey?.trim() || '';
 }
@@ -76,37 +72,32 @@ export function saveGeminiModel(model: string): void {
   }
 }
 
-/**
- * Load chat history from LocalStorage
- */
+/** Load chat history from LocalStorage */
 export function loadChatHistory(): ChatMessage[] {
   try {
     const raw = localStorage.getItem(CHAT_HISTORY_STORAGE);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch {
-    // Ignore error
+    // Ignore
   }
   return [];
 }
 
-/**
- * Save chat history to LocalStorage
- */
+/** Persist last 30 chat messages */
 export function saveChatHistory(history: ChatMessage[]): void {
   try {
-    localStorage.setItem(CHAT_HISTORY_STORAGE, JSON.stringify(history.slice(-30))); // Keep last 30
+    localStorage.setItem(CHAT_HISTORY_STORAGE, JSON.stringify(history.slice(-30)));
   } catch {
-    // Ignore error
+    // Ignore
   }
 }
 
 /**
- * Build rich system prompt embedding full astronaut record and mission context
+ * Build a rich system prompt embedding the full astronaut record and mission context.
+ * This is what gives Gemini its deep awareness of the astronaut's health status.
  */
 export function buildAstronautSystemPrompt(
   profile: AstronautProfile,
@@ -114,61 +105,57 @@ export function buildAstronautSystemPrompt(
   history: DailyAssessmentRecord[] = []
 ): string {
   const groundState = getGroundLinkState();
-
   const vitals = latestAssessment?.values;
   const overall = latestAssessment?.overall;
   const results = latestAssessment?.results;
 
-  // Recent 3 records summary
-  const recentDays = history.slice(0, 3).map((r) => {
-    return `- Sol ${r.missionDay}: HR ${r.values.heartRate} bpm, BP ${r.values.systolic}/${r.values.diastolic} mmHg, Sleep ${r.values.sleepDuration}h, Temp ${r.values.bodyTemperature}°C, Score: ${r.overall?.score ?? 90}/100 (${r.overall?.status ?? 'GREEN'})`;
-  }).join('\n');
+  const recentDays = history.slice(0, 5).map((r) =>
+    `  Sol ${r.missionDay}: HR ${r.values.heartRate} bpm | BP ${r.values.systolic}/${r.values.diastolic} mmHg | Sleep ${r.values.sleepDuration}h | Temp ${r.values.bodyTemperature}°C | Score ${r.overall?.score ?? 90}/100 (${r.overall?.status ?? 'GREEN'})`
+  ).join('\n');
 
-  return `You are "Dr. Orion" (Aegis Onboard AI Flight Surgeon & Telemedicine Officer), an autonomous clinical decision-support system aboard the deep-space spacecraft "${profile.spacecraft}" on the mission "${profile.missionName}".
+  return `You are "Dr. Orion", an Autonomous AI Flight Surgeon and Telemedicine Officer aboard the deep-space spacecraft "${profile.spacecraft}" on mission "${profile.missionName}".
 
-ASTRONAUT PROFILE UNDER YOUR CARE:
-- Name: ${profile.name} (${profile.rank})
-- Call Sign: ${profile.callSign}
+ASTRONAUT PROFILE:
+- Name: ${profile.name} | Rank: ${profile.rank} | Call Sign: ${profile.callSign}
 - Age: ${profile.age} | Blood Type: ${profile.bloodType}
 - Role: ${profile.role}
 - Current Mission Day: Sol ${profile.currentMissionDay}
-- Personal Resting Baselines:
+- Pre-flight Personal Baselines:
   * Resting Heart Rate: ${profile.restingHeartRateBaseline} BPM
-  * Blood Pressure Baseline: ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg
-  * Core Body Temperature Baseline: ${profile.bodyTemperatureBaseline} °C
+  * Blood Pressure: ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg
+  * Core Body Temperature: ${profile.bodyTemperatureBaseline} °C
 
-LATEST BIOMEDICAL TELEMETRY (TODAY):
-- Health Composite Score: ${overall?.score ?? 95}/100 (${overall?.status ?? 'GREEN'} - ${overall?.statusLabel ?? 'Healthy / Nominal'})
-- Resting Heart Rate: ${vitals?.heartRate ?? 72} BPM (Baseline: ${profile.restingHeartRateBaseline} BPM) [Status: ${results?.heartRate?.status ?? 'GREEN'}]
-- Blood Pressure: ${vitals?.systolic ?? 118}/${vitals?.diastolic ?? 76} mmHg (Baseline: ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg) [Status: ${results?.bloodPressure?.status ?? 'GREEN'}]
-- Blood Glucose: ${vitals?.bloodSugar ?? 92} mg/dL [Status: ${results?.bloodSugar?.status ?? 'GREEN'}]
-- Core Body Temperature: ${vitals?.bodyTemperature ?? 36.6} °C (Baseline: ${profile.bodyTemperatureBaseline} °C) [Status: ${results?.bodyTemperature?.status ?? 'GREEN'}]
-- Sleep Duration: ${vitals?.sleepDuration ?? 7.5} hours [Status: ${results?.sleepDuration?.status ?? 'GREEN'}]
-- Subjective Mood / Stress: ${vitals?.mood ?? 'good'}
-- Cabin Environmental CO2: ${results?.cabinCO2?.valueDisplay ?? '2.8'} mmHg (NASA-STD-3001 threshold is 3.0 mmHg nominal, 4.5 mmHg max)
-- Space Radiation Career Dose: ${results?.radiationDose?.valueDisplay ?? '142'} mSv (Includes 30% CSA CANS neutron share; threshold 600 mSv max)
-- SANS / Vision Assessment: ${vitals?.visionHeadache === 'yes' ? 'FLAGGED: Blurred vision / ocular pressure / headache reported' : 'Nominal: No SANS vision blur or cephalad fluid shift headache'}
-- Notes: ${vitals?.notes || 'None recorded'}
+TODAY'S BIOMEDICAL TELEMETRY (Sol ${profile.currentMissionDay}):
+- Overall Health Score: ${overall?.score ?? 95}/100 | Status: ${overall?.status ?? 'GREEN'} (${overall?.statusLabel ?? 'Nominal'})
+- Heart Rate: ${vitals?.heartRate ?? 72} BPM (baseline ${profile.restingHeartRateBaseline} BPM) [${results?.heartRate?.status ?? 'GREEN'}]
+- Blood Pressure: ${vitals?.systolic ?? 118}/${vitals?.diastolic ?? 76} mmHg (baseline ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg) [${results?.bloodPressure?.status ?? 'GREEN'}]
+- Blood Glucose: ${vitals?.bloodSugar ?? 92} mg/dL [${results?.bloodSugar?.status ?? 'GREEN'}]
+- Core Temp: ${vitals?.bodyTemperature ?? 36.6} °C (baseline ${profile.bodyTemperatureBaseline} °C) [${results?.bodyTemperature?.status ?? 'GREEN'}]
+- Sleep: ${vitals?.sleepDuration ?? 7.5} hours [${results?.sleepDuration?.status ?? 'GREEN'}]
+- Mood/Stress: ${vitals?.mood ?? 'good'}
+- Cabin CO₂: ${results?.cabinCO2?.valueDisplay ?? '2.8'} mmHg (NASA-STD-3001 limit: 3.0 nominal / 4.5 max)
+- Space Radiation Career Dose: ${results?.radiationDose?.valueDisplay ?? '142'} mSv (includes 30% CSA CANS neutron share; limit 600 mSv)
+- SANS Vision: ${vitals?.visionHeadache === 'yes' ? 'FLAGGED — visual acuity shift / headache reported' : 'Nominal — no ocular pressure issues'}
+- Notes: ${vitals?.notes || 'None'}
 
-RECENT HISTORICAL TRENDS:
-${recentDays || 'No previous historical days available.'}
+RECENT HEALTH HISTORY (last ${history.slice(0, 5).length} sols):
+${recentDays || 'No prior records available.'}
 
-COMMUNICATION LINK & MISSION CONTEXT:
-- Mode: ${groundState.mode === 'mars_delay' ? 'Mars Delay (22-minute speed-of-light one-way latency). Earth ground surgeon is NOT reachable in real time. You must provide autonomous medical countermeasure guidance per NASA EIMO 2023 protocol.' : 'Deep Space Network (DSN) Direct Link Online.'}
-- Challenge Clinical Standards: Adheres strictly to NEWS2 (National Early Warning Score 2), American Heart Association (AHA), CDC, NASA-STD-3001 Vol 2, and NASA HRP (5 Hazards: Gravity Fields, Radiation, Distance from Earth, Hostile Closed Environment, Isolation).
+COMMS STATUS:
+- Mode: ${groundState.mode === 'mars_delay' ? 'MARS DELAY — 22-minute one-way light-time. Ground surgeon unreachable in real-time. Autonomous EIMO 2023 protocol active.' : 'DSN DIRECT LINK — Earth ground surgeon reachable.'}
 
-YOUR INSTRUCTIONS & ROLE:
-1. Address the astronaut respectfully by rank or name (e.g. "Commander", "Cmdr. Vance", or "${profile.name}").
-2. Answer any question about their current vitals, trends, recovery progress, risks, or mission readiness using their actual data provided above.
-3. When giving countermeasure recommendations:
-   - Provide concrete, numbered action steps (e.g., fluid loading with 1.5L water + electrolyte tablet, 45 min ARED resistance, aerobic cycle ergometer, SANS visual grid test, sleep hygiene, radiation shelter during solar particle events).
-   - Explain the physiological mechanism under microgravity (e.g., cephalic fluid shift, cardiovascular deconditioning, space motion adaptation, space fever).
-4. Maintain a calm, professional, mission-ready, and encouraging tone suitable for spaceflight.
-5. Emphasize operational decision support (do not claim to replace final ground surgeon telemetry confirmation when Earth link is nominal). Format key clinical findings and recovery steps clearly using markdown.`;
+YOUR INSTRUCTIONS:
+1. Address the astronaut by rank or name (e.g. "Commander", "Cmdr. Vance").
+2. Use the ACTUAL telemetry data above for all answers — no generic responses.
+3. Give concrete numbered action steps (exercises, hydration amounts, timings).
+4. Explain WHY physiological changes happen in microgravity (cephalad fluid shift, cardiovascular deconditioning, SANS, radiation risks).
+5. Keep tone: calm, professional, mission-ready, and concise.
+6. Format responses clearly with headers, bullet lists, and bold key values.
+7. ALWAYS use the actual numbers from the telemetry above. Never invent data.`;
 }
 
 /**
- * Intelligent Fallback Medical Engine (when no API key is provided or offline)
+ * Heuristic fallback engine — used ONLY when no API key exists or on network failure.
  */
 export function generateHeuristicResponse(
   prompt: string,
@@ -187,130 +174,43 @@ export function generateHeuristicResponse(
   const score = overall?.score ?? 95;
   const status = overall?.status ?? 'GREEN';
 
-  // 1. Overall Progress / Health Summary
   if (p.includes('progress') || p.includes('summary') || p.includes('status') || p.includes('how am i') || p.includes('overall') || p.includes('today')) {
     return {
-      text: `### 📋 Mission Day ${profile.currentMissionDay} Health & Recovery Briefing
-**Astronaut:** ${profile.rank} ${profile.name} (${profile.callSign})  
-**Overall Readiness Index:** **${score}/100** — \`${status === 'GREEN' ? 'Nominal / Mission-Ready' : status === 'YELLOW' ? 'Advisory Variance' : 'Action Required'}\`
-
-Here is your physiological status overview:
-- **Cardiovascular:** Heart rate is **${hr} BPM** (baseline is ${hrBase} BPM, variance: ${hr - hrBase >= 0 ? '+' : ''}${hr - hrBase} BPM). Blood pressure is **${bpSys}/${bpDia} mmHg** (nominal).
-- **Thermoregulation & Metabolic:** Core temperature is **${temp}°C** with blood glucose at **${vitals?.bloodSugar ?? 92} mg/dL**, both well within NASA-STD-3001 safety limits.
-- **Sleep & Rest:** **${sleep} hours** logged last night. Sleep architecture is sufficient for cognitive high-tempo EVA tasks.
-- **Environmental Shielding:** Cabin CO₂ is **2.8 mmHg** (below the 3.0 mmHg nominal ceiling) and cumulative radiation is **142 mSv** (well clear of the 600 mSv career limit).
-
-**Flight Surgeon Recommendation:** You are cleared for all scheduled mission tasks today. Stay consistent with your afternoon 45-minute ARED resistance session.`,
-      suggestions: [
-        'Suggest countermeasures for my fatigue',
-        'Analyze my heart rate and blood pressure vs baseline',
-        'What are my radiation & CO2 exposure levels?',
-      ],
+      text: `## Mission Day ${profile.currentMissionDay} — Health Summary\n\n**Astronaut:** ${profile.rank} ${profile.name}\n**Health Score:** **${score}/100** (${status})\n\n| Indicator | Value | Baseline | Status |\n|-----------|-------|----------|--------|\n| Heart Rate | **${hr} BPM** | ${hrBase} BPM | ${hr <= 90 ? '✅ Normal' : '⚠️ Elevated'} |\n| Blood Pressure | **${bpSys}/${bpDia} mmHg** | ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} | ✅ Normal |\n| Core Temp | **${temp}°C** | ${profile.bodyTemperatureBaseline}°C | ✅ Normal |\n| Sleep | **${sleep}h** | ≥7h | ${sleep >= 7 ? '✅ Normal' : '⚠️ Low'} |\n\n**Environmental:** Cabin CO₂ at **2.8 mmHg** ✅ | Radiation at **142 mSv** ✅`,
+      suggestions: ['How is my cardiovascular health?', 'Suggest countermeasures for today', 'What are my radiation & CO2 levels?'],
     };
   }
 
-  // 2. Recovery / Countermeasures
-  if (p.includes('countermeasure') || p.includes('recover') || p.includes('routine') || p.includes('exercise') || p.includes('tired') || p.includes('fatigue')) {
-    return {
-      text: `### 🛡️ Recommended Microgravity Countermeasure Protocol
-Based on your current Sol ${profile.currentMissionDay} profile and recorded sleep of **${sleep} hours**, here is your optimized recovery strategy:
-
-1. **Cardiovascular & Orthostatic Conditioning:**
-   - **T2 Cycle Ergometer:** 30 minutes interval training at 75% max VO₂ to maintain venous vascular tone and counteract cephalic fluid redistribution.
-   - **ARED Resistance:** 45 minutes targeting spinal extensor and lower-extremity bone mineral density (deadlifts and heel raises).
-
-2. **Hydration & Electrolyte Protocol:**
-   - Microgravity causes fluid volume contraction (~10-15% plasma volume loss). Consume **1.5 liters of water** supplemented with 1 electrolyte replenishment packet before sleep.
-
-3. **Circadian & Sleep Hygiene:**
-   - Set cabin illumination to 450nm blue-depleted warm light 90 minutes before scheduled sleep.
-   - Maintain cabin ventilation fans at nominal flow to prevent localized CO₂ pockets around your sleeping quarters.`,
-      suggestions: [
-        'How does my heart rate compare to my Earth baseline?',
-        'What is my SANS vision check status?',
-        'Give me an SBAR medical summary',
-      ],
-    };
-  }
-
-  // 3. Heart Rate & Blood Pressure
   if (p.includes('heart') || p.includes('bp') || p.includes('pressure') || p.includes('cardio') || p.includes('pulse')) {
-    const hrDiff = hr - hrBase;
     return {
-      text: `### ❤️ Cardiovascular Telemetry Analysis
-**Current Heart Rate:** **${hr} BPM** (Personal Baseline: **${hrBase} BPM**)  
-**Current Blood Pressure:** **${bpSys}/${bpDia} mmHg** (Baseline: **${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg**)
-
-**Physiological Assessment:**
-- Your resting heart rate shows a variance of **${hrDiff >= 0 ? '+' : ''}${hrDiff} BPM** compared to your pre-flight baseline.
-- In microgravity, the reduction in gravitational hydrostatic pressure gradient results in a headward fluid shift, which initially increases stroke volume and decreases sympathetic tone.
-- Your blood pressure of **${bpSys}/${bpDia} mmHg** is within the **NEWS2 / AHA Green Tier** (<120/80 mmHg). No orthostatic hypotension risk indicated during intra-vehicular maneuvers.`,
-      suggestions: [
-        'What should I do if my heart rate rises above 90 BPM?',
-        'How are my radiation and cabin CO2 levels?',
-        'Summarize my overall progress today',
-      ],
+      text: `## ❤️ Cardiovascular Analysis\n\n- **Resting HR:** **${hr} BPM** (baseline: ${hrBase} BPM, variance: ${hr >= hrBase ? '+' : ''}${hr - hrBase} BPM)\n- **Blood Pressure:** **${bpSys}/${bpDia} mmHg** (baseline: ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} mmHg)\n\n**Assessment:** In microgravity, cephalic fluid redistribution increases venous return, raising stroke volume while sympathetic tone decreases. Your readings are within normal operational range.`,
+      suggestions: ['Suggest countermeasures for cardiovascular health', 'Summarize my overall health today'],
     };
   }
 
-  // 4. Radiation & CO2
-  if (p.includes('radiation') || p.includes('co2') || p.includes('carbon') || p.includes('environment') || p.includes('neutron')) {
+  if (p.includes('countermeasure') || p.includes('recover') || p.includes('exercise') || p.includes('tired') || p.includes('fatigue') || p.includes('routine')) {
     return {
-      text: `### ☢️ Environmental & Radiation Telemetry (NASA-STD-3001)
-- **Cabin CO₂ Partial Pressure:** **2.8 mmHg** (Thresholds: Green ≤3.0, Yellow 3.1–4.5, Red >4.5 mmHg)  
-  *Context:* NASA OCHMO Technical Brief TB-004 indicates that spaceflight hypercapnia symptoms (headaches, lethargy) emerge when ambient CO₂ exceeds 4.5 mmHg. Your current air scrubber performance is nominal.
-- **Cumulative Space Radiation Dose:** **142 mSv**  
-  *Career Permissible Exposure Limit:* 600 mSv (NASA OCHMO TB-020).  
-  *Neutron Component:* Includes a calibrated **30% CSA CANS biological neutron weight**, accounting for secondary heavy particle fragmentation during deep-space transit.
-- **Current Solar Particle Event (SPE) Status:** Quiet. Solar flux sensors show quiet magnetosheath conditions. Radiation shelter entry is **not required**.`,
-      suggestions: [
-        'What are the symptoms of elevated cabin CO2?',
-        'Suggest recovery countermeasures for my routine',
-        'Summarize my mission day progress',
-      ],
+      text: `## 🏃 Recommended Countermeasures for Sol ${profile.currentMissionDay}\n\n1. **Cardiovascular (30 min)** — T2 Cycle Ergometer at 75% VO₂ max to maintain vascular tone\n2. **Resistance (45 min)** — ARED deadlifts + heel raises to preserve bone/muscle mass\n3. **Hydration** — 1.5L water + 1 electrolyte tablet before sleep to counteract plasma volume loss (~10–15% in microgravity)\n4. **Sleep hygiene** — Set cabin lights to warm (450nm blue-depleted) 90 min before scheduled rest\n5. **Cabin ventilation** — Ensure fans at nominal flow to prevent localized CO₂ pockets near sleep quarters`,
+      suggestions: ['Analyze my heart rate vs baseline', 'What are my radiation & CO2 levels?', 'Overall health summary'],
     };
   }
 
-  // 5. SANS / Vision / Headaches
-  if (p.includes('sans') || p.includes('vision') || p.includes('eye') || p.includes('headache') || p.includes('blur')) {
-    const sansStatus = vitals?.visionHeadache === 'yes';
+  if (p.includes('radiation') || p.includes('co2') || p.includes('carbon') || p.includes('environment')) {
     return {
-      text: `### 👁️ Spaceflight-Associated Neuro-ocular Syndrome (SANS) Protocol
-**Status:** ${sansStatus ? '⚠️ Symptom Flagged' : '✅ Nominal (No Visual Acuity Shift)'}
-
-**HRP Risk Explanation:**
-- Cephalad venous engorgement caused by long-duration microgravity elevates intracranial pressure (ICP), which can lead to optic disc edema, globe flattening, choroidal folds, and hyperopic refractive shifts.
-- **Guidance:** Perform the 10-point Amsler Grid visual check and standard near-card acuity test. If blurred vision or retro-orbital aching persists, notify the ground flight surgeon and initiate the Lower Body Negative Pressure (LBNP) or venous compression countermeasure protocol.`,
-      suggestions: [
-        'What countermeasures relieve cephalad fluid pressure?',
-        'Summarize my vitals and health score',
-        'How is my recovery progressing today?',
-      ],
+      text: `## ☢️ Environmental Telemetry\n\n**Cabin CO₂:**\n- Current: **2.8 mmHg** ✅ (NASA-STD-3001 limit: 3.0 mmHg nominal, 4.5 mmHg max)\n- Status: Air scrubbers performing nominally\n\n**Space Radiation Dose:**\n- Career cumulative: **142 mSv** ✅ (career limit: 600 mSv — OCHMO TB-020)\n- Includes **30% CSA CANS neutron biological weight** for deep-space transit\n- SPE (Solar Particle Event) status: Quiet — no radiation shelter required`,
+      suggestions: ['Suggest countermeasures for my routine', 'Summarize my health today'],
     };
   }
 
-  // Default helpful response
   return {
-    text: `Hello, ${profile.rank} ${profile.name}. I am **Dr. Orion**, your Aegis AI Flight Surgeon aboard the ${profile.spacecraft}.
-
-I am actively tracking your telemetry for **Sol ${profile.currentMissionDay}**:
-- **Health Composite Score:** **${score}/100** (\`${status}\`)
-- **Resting Vitals:** **${hr} BPM** | **${bpSys}/${bpDia} mmHg** | **${temp}°C**
-- **Rest:** **${sleep} hours** | Mood: **${vitals?.mood ?? 'good'}**
-- **Environmental Safety:** Cabin CO₂ at **2.8 mmHg** | Space Radiation at **142 mSv**
-
-Ask me anything regarding your physiological metrics, countermeasure exercises, sleep hygiene, or how to handle spaceflight anomalies.`,
-    suggestions: [
-      'Summarize my mission day progress',
-      'Explain my heart rate & blood pressure vs baseline',
-      'Suggest countermeasures for my daily routine',
-      'What are my radiation & CO2 exposure levels?',
-    ],
+    text: `## Greetings, ${profile.rank} ${profile.name}\n\nI am **Dr. Orion**, your Aegis AI Flight Surgeon for Sol **${profile.currentMissionDay}**.\n\n**Current Status:** Score **${score}/100** (${status})\n- HR: **${hr} BPM** | BP: **${bpSys}/${bpDia} mmHg** | Sleep: **${sleep}h** | Temp: **${temp}°C**\n\nAsk me about your vitals, recovery exercises, spaceflight risks, or countermeasure protocols.`,
+    suggestions: ['Summarize my mission day progress', 'Suggest countermeasures for my routine', 'Analyze my cardiovascular health', 'What are my radiation & CO2 levels?'],
   };
 }
 
 /**
- * Send message to Gemini API (or fallback if no key or error)
+ * PRIMARY FUNCTION — sends message to Gemini API.
+ * Always reads API key fresh from localStorage at call time (no stale state).
  */
 export async function sendGeminiChatMessage(
   userMessage: string,
@@ -319,127 +219,111 @@ export async function sendGeminiChatMessage(
   historyRecords: DailyAssessmentRecord[] = [],
   chatHistory: ChatMessage[] = []
 ): Promise<ChatMessage> {
+  // Always read fresh from localStorage — avoids stale closure issues
   const apiKey = getGeminiApiKey();
   const model = getGeminiModel();
 
-  // If no API key provided, immediately use rich heuristic clinical intelligence
+  console.log('[Dr. Orion] API Key present:', Boolean(apiKey), '| Model:', model);
+
+  // --- FALLBACK: No API key ---
   if (!apiKey) {
     const fallback = generateHeuristicResponse(userMessage, profile, latestAssessment);
     return {
       id: `ai-${Date.now()}`,
       sender: 'assistant',
-      text: fallback.text + `\n\n> 💡 *Note: Running on Onboard Medical Telemetry Engine. Enter your **Google Gemini API Key** in the chat header to enable live LLM conversational reasoning.*`,
+      text: fallback.text + `\n\n---\n> 💡 **Offline Mode:** No Gemini API key detected. Click the **key icon** in the header above to add your free Google Gemini API key and enable live AI reasoning.`,
       timestamp: new Date().toISOString(),
-      modelUsed: 'Onboard Clinical Engine (Heuristic)',
+      modelUsed: 'Onboard Heuristic Engine',
       isFallback: true,
       suggestions: fallback.suggestions,
-      vitalsSnapshot: {
-        heartRate: latestAssessment?.values.heartRate ?? 72,
-        bloodPressure: `${latestAssessment?.values.systolic ?? 118}/${latestAssessment?.values.diastolic ?? 76}`,
-        healthScore: latestAssessment?.overall.score ?? 95,
-        missionDay: profile.currentMissionDay,
-      },
     };
   }
 
+  // --- GEMINI API CALL ---
   const systemInstruction = buildAstronautSystemPrompt(profile, latestAssessment, historyRecords);
 
-  // Format conversational turns for Gemini API
-  // Filter out system notes and take last 10 messages for context window efficiency
+  // Conversation history (last 10 messages for context window efficiency)
   const contents = chatHistory
     .filter((m) => m.sender === 'user' || m.sender === 'assistant')
-    .slice(-8)
+    .slice(-10)
     .map((m) => ({
       role: m.sender === 'user' ? 'user' : 'model',
       parts: [{ text: m.text }],
     }));
 
-  // Append latest user message
-  contents.push({
-    role: 'user',
-    parts: [{ text: userMessage }],
-  });
+  contents.push({ role: 'user', parts: [{ text: userMessage }] });
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  // Try the selected model first, then fallback models if needed
+  const modelsToTry = [model, 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  const uniqueModels = [...new Set(modelsToTry)];
 
-  const payload = {
-    system_instruction: {
-      parts: [{ text: systemInstruction }],
-    },
-    contents,
-    generationConfig: {
-      temperature: 0.35,
-      maxOutputTokens: 1024,
-      topP: 0.95,
-    },
-  };
+  for (const tryModel of uniqueModels) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${apiKey}`;
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const payload = {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents,
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 1500,
+        topP: 0.95,
       },
-      body: JSON.stringify(payload),
-    });
+    };
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => null);
-      const errorMsg = errorData?.error?.message || `HTTP ${res.status} ${res.statusText}`;
-      console.warn(`[Gemini API] Request returned error: ${errorMsg}. Falling back to internal engine.`);
+    try {
+      console.log(`[Dr. Orion] Calling Gemini model: ${tryModel}`);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      // Gracefully fall back to local clinical heuristics
-      const fallback = generateHeuristicResponse(userMessage, profile, latestAssessment);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        const errorMsg = errorData?.error?.message || `HTTP ${res.status}`;
+        console.warn(`[Dr. Orion] Model ${tryModel} error: ${errorMsg}`);
+        // Try next model in list
+        continue;
+      }
+
+      const data = await res.json();
+      const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!candidateText) {
+        console.warn(`[Dr. Orion] Empty response from ${tryModel}, trying next model`);
+        continue;
+      }
+
+      console.log(`[Dr. Orion] ✅ Success with model: ${tryModel}`);
       return {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
-        text: fallback.text + `\n\n> ⚠️ *Gemini API Notice: ${errorMsg}. Operating seamlessly via onboard telemetry heuristic engine.*`,
+        text: candidateText,
         timestamp: new Date().toISOString(),
-        modelUsed: 'Fallback Engine (API Error)',
-        isFallback: true,
-        suggestions: fallback.suggestions,
+        modelUsed: tryModel,
+        isFallback: false,
+        suggestions: [
+          'What is my overall health status today?',
+          'Suggest countermeasures for my routine',
+          'Analyze my cardiovascular readings vs baseline',
+        ],
       };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[Dr. Orion] Network error on ${tryModel}: ${message}`);
+      continue;
     }
-
-    const data = await res.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!candidateText) {
-      throw new Error('No candidate content received from Gemini API');
-    }
-
-    return {
-      id: `ai-${Date.now()}`,
-      sender: 'assistant',
-      text: candidateText,
-      timestamp: new Date().toISOString(),
-      modelUsed: model,
-      isFallback: false,
-      suggestions: [
-        'How is my cardiovascular recovery progressing?',
-        'Suggest countermeasures for my daily routine',
-        'Generate an SBAR report for Ground Control',
-      ],
-      vitalsSnapshot: {
-        heartRate: latestAssessment?.values.heartRate ?? 72,
-        bloodPressure: `${latestAssessment?.values.systolic ?? 118}/${latestAssessment?.values.diastolic ?? 76}`,
-        healthScore: latestAssessment?.overall.score ?? 95,
-        missionDay: profile.currentMissionDay,
-      },
-    };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn('[Gemini API] Network/Fetch failure:', message);
-
-    const fallback = generateHeuristicResponse(userMessage, profile, latestAssessment);
-    return {
-      id: `ai-${Date.now()}`,
-      sender: 'assistant',
-      text: fallback.text + `\n\n> 📡 *Network Connection Notice: Deep Space link degraded (${message}). Running on local flight telemetry decision-support.*`,
-      timestamp: new Date().toISOString(),
-      modelUsed: 'Local Autonomous Telemedicine Engine',
-      isFallback: true,
-      suggestions: fallback.suggestions,
-    };
   }
+
+  // All models exhausted — use heuristic fallback
+  const fallback = generateHeuristicResponse(userMessage, profile, latestAssessment);
+  return {
+    id: `ai-${Date.now()}`,
+    sender: 'assistant',
+    text: fallback.text + `\n\n---\n> ⚠️ **Connection Issue:** Could not reach Gemini API with the current key. Please verify your API key is correct and has the Generative Language API enabled.`,
+    timestamp: new Date().toISOString(),
+    modelUsed: 'Fallback Engine',
+    isFallback: true,
+    suggestions: fallback.suggestions,
+  };
 }

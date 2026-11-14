@@ -1,22 +1,22 @@
 /**
- * Aegis Health — Chat Interface Component
- * Reusable full-featured chat interface powered by Google Gemini API
- * Used in both full page and floating quick drawer
+ * Aegis Health — Dr. Orion AI Flight Surgeon Chat Interface
+ * Renders Gemini responses with full markdown support and clean mission UI
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Send,
   Sparkles,
   Bot,
   User,
-  Key,
   RotateCcw,
   Copy,
   Check,
   Download,
   Radio,
   ChevronDown,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 import { ChatMessage } from '../../types/chat';
 import { AstronautProfile, DailyAssessmentRecord } from '../../types/health';
@@ -28,6 +28,7 @@ import {
   saveChatHistory,
 } from '../../services/geminiChatService';
 import { GeminiApiKeyModal } from './GeminiApiKeyModal';
+import { MarkdownMessage } from './MarkdownMessage';
 import { getGroundLinkState } from '../../stores/groundLinkStore';
 
 interface ChatInterfaceProps {
@@ -38,14 +39,38 @@ interface ChatInterfaceProps {
   onCloseFloating?: () => void;
 }
 
-const INITIAL_SUGGESTIONS = [
-  '📊 Summarize my mission day progress & score',
-  '❤️ Analyze my heart rate and BP vs baseline',
-  '🛡️ What are my radiation & cabin CO2 risks?',
-  '🏃 Suggest countermeasures for my routine',
-  '👁️ Check my SANS vision & headache protocol',
-  '📡 Advise on autonomous Mars Delay protocol',
+const QUICK_PROMPTS = [
+  { emoji: '📊', label: 'Health Summary', text: 'Summarize my health status and mission readiness for today' },
+  { emoji: '❤️', label: 'Cardiovascular', text: 'Analyze my heart rate and blood pressure compared to my pre-flight baseline' },
+  { emoji: '🛡️', label: 'Radiation & CO₂', text: 'What are my current radiation dose and cabin CO2 exposure levels?' },
+  { emoji: '🏃', label: 'Countermeasures', text: 'Recommend specific countermeasure exercises and protocols for today' },
+  { emoji: '👁️', label: 'SANS Check', text: 'Explain my SANS vision check status and any neuro-ocular risks' },
+  { emoji: '😴', label: 'Sleep & Recovery', text: 'How is my sleep affecting my recovery and mission performance?' },
 ];
+
+function buildWelcomeMessage(profile: AstronautProfile, latestAssessment?: DailyAssessmentRecord): string {
+  const score = latestAssessment?.overall.score ?? 95;
+  const status = latestAssessment?.overall.status ?? 'GREEN';
+  const vitals = latestAssessment?.values;
+  const statusIcon = status === 'GREEN' ? '✅' : status === 'YELLOW' ? '⚠️' : '🚨';
+
+  return `## Welcome, ${profile.rank} ${profile.name}
+
+I am **Dr. Orion**, your Aegis AI Flight Surgeon aboard **${profile.spacecraft}**.
+
+I have full access to your Sol **${profile.currentMissionDay}** biomedical telemetry:
+
+| Indicator | Today's Reading | Status |
+|-----------|----------------|--------|
+| Health Score | **${score}/100** | ${statusIcon} ${status} |
+| Heart Rate | **${vitals?.heartRate ?? 72} BPM** | vs baseline ${profile.restingHeartRateBaseline} BPM |
+| Blood Pressure | **${vitals?.systolic ?? 118}/${vitals?.diastolic ?? 76} mmHg** | vs baseline ${profile.bloodPressureBaseline.systolic}/${profile.bloodPressureBaseline.diastolic} |
+| Sleep | **${vitals?.sleepDuration ?? 7.5}h** | ${(vitals?.sleepDuration ?? 7.5) >= 7 ? '✅ Adequate' : '⚠️ Below target'} |
+| Cabin CO₂ | **2.8 mmHg** | ✅ Nominal |
+| Radiation Dose | **142 mSv** | ✅ Within career limit |
+
+Ask me anything about your vitals, recovery protocols, countermeasure exercises, or spaceflight health risks.`;
+}
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   profile,
@@ -57,57 +82,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const saved = loadChatHistory();
     if (saved.length > 0) return saved;
-
-    // Default welcome message
-    const score = latestAssessment?.overall.score ?? 95;
-    return [
-      {
-        id: 'welcome-msg',
-        sender: 'assistant',
-        text: `### 🩺 Greetings, ${profile.rank} ${profile.name}
-I am **Dr. Orion**, your Aegis AI Flight Surgeon and Telemedicine Officer. I have full real-time access to your biomedical telemetry for **Sol ${profile.currentMissionDay}**.
-
-**Telemetry Snapshot:**
-- **Health Composite Score:** **${score}/100** (\`${latestAssessment?.overall.status ?? 'GREEN'}\`)
-- **Resting Heart Rate:** **${latestAssessment?.values.heartRate ?? 72} BPM** (Baseline: ${profile.restingHeartRateBaseline} BPM)
-- **Blood Pressure:** **${latestAssessment?.values.systolic ?? 118}/${latestAssessment?.values.diastolic ?? 76} mmHg**
-- **Environmental Safety:** Cabin CO₂: **2.8 mmHg** | Space Radiation: **142 mSv**
-
-Ask me anything regarding your physiological status, countermeasure exercises, recovery protocols, or operational spaceflight risks.`,
-        timestamp: new Date().toISOString(),
-        modelUsed: 'Aegis System Engine',
-        suggestions: [
-          'How is my cardiovascular recovery progressing?',
-          'What are my radiation & CO2 exposure levels?',
-          'Suggest countermeasures for my daily routine',
-        ],
-      },
-    ];
+    return [{
+      id: 'welcome-0',
+      sender: 'assistant',
+      text: buildWelcomeMessage(profile, latestAssessment),
+      timestamp: new Date().toISOString(),
+      modelUsed: 'Dr. Orion System',
+      suggestions: ['Summarize my health status and mission readiness for today', 'Analyze my heart rate and blood pressure compared to my pre-flight baseline', 'Recommend specific countermeasure exercises and protocols for today'],
+    }];
   });
 
   const [inputPrompt, setInputPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(() => Boolean(getGeminiApiKey()));
-  const [activeModel, setActiveModel] = useState(() => getGeminiModel());
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
+  // Track model — refreshed after key save
+  const [activeModel, setActiveModel] = useState(() => getGeminiModel());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const groundState = getGroundLinkState();
 
-  // Auto-scroll on new messages
+  // Persist and scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     saveChatHistory(messages);
   }, [messages]);
 
-  // Sync API key state
-  const handleKeyUpdated = () => {
-    setHasApiKey(Boolean(getGeminiApiKey()));
+  const refreshKeyState = useCallback(() => {
     setActiveModel(getGeminiModel());
-  };
+  }, []);
 
-  const handleSend = async (textToSend?: string) => {
+  const handleSend = useCallback(async (textToSend?: string) => {
     const prompt = (textToSend || inputPrompt).trim();
     if (!prompt || isGenerating) return;
 
@@ -118,254 +124,262 @@ Ask me anything regarding your physiological status, countermeasure exercises, r
       timestamp: new Date().toISOString(),
     };
 
-    const updated = [...messages, userMsg];
-    setMessages(updated);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInputPrompt('');
     setIsGenerating(true);
 
     try {
+      // sendGeminiChatMessage reads API key fresh from localStorage each time
       const aiResponse = await sendGeminiChatMessage(
         prompt,
         profile,
         latestAssessment,
         historyRecords,
-        updated
+        nextMessages
       );
       setMessages((prev) => [...prev, aiResponse]);
     } catch (err) {
-      console.error('[ChatInterface] Failed to generate response:', err);
+      console.error('[ChatInterface] Unexpected error:', err);
     } finally {
       setIsGenerating(false);
+      // Re-focus input after response
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-  };
+  }, [inputPrompt, isGenerating, messages, profile, latestAssessment, historyRecords]);
 
   const handleClearHistory = () => {
-    if (window.confirm('Clear AI consultation history and restart session?')) {
+    if (window.confirm('Reset Dr. Orion consultation session?')) {
       localStorage.removeItem('aegis_chat_history_v1');
-      setMessages([
-        {
-          id: `welcome-${Date.now()}`,
-          sender: 'assistant',
-          text: `Consultation session restarted. Telemetry for ${profile.rank} ${profile.name} (Sol ${profile.currentMissionDay}) loaded and ready. How may I assist your mission recovery today?`,
-          timestamp: new Date().toISOString(),
-          suggestions: INITIAL_SUGGESTIONS.slice(0, 3),
-        },
-      ]);
+      setMessages([{
+        id: `welcome-${Date.now()}`,
+        sender: 'assistant',
+        text: buildWelcomeMessage(profile, latestAssessment),
+        timestamp: new Date().toISOString(),
+        modelUsed: 'Dr. Orion System',
+        suggestions: QUICK_PROMPTS.slice(0, 3).map(p => p.text),
+      }]);
     }
   };
 
   const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).catch(() => {});
     setCopiedMsgId(id);
-    setTimeout(() => setCopiedMsgId(null), 2000);
+    setTimeout(() => setCopiedMsgId(null), 2500);
   };
 
-  const handleExportTranscript = () => {
-    const transcript = [
-      `=============================================================`,
-      `AEGIS HEALTH — AI FLIGHT SURGEON MEDICAL CONSULTATION RECORD`,
-      `=============================================================`,
-      `Date/Time (UTC): ${new Date().toISOString()}`,
+  const handleExport = () => {
+    const lines = [
+      `AEGIS HEALTH — DR. ORION AI CONSULTATION RECORD`,
       `Astronaut: ${profile.rank} ${profile.name} (${profile.callSign})`,
-      `Mission: ${profile.missionName} | Sol: ${profile.currentMissionDay}`,
-      `Spacecraft: ${profile.spacecraft}`,
-      `Health Score: ${latestAssessment?.overall.score ?? 95}/100 (${latestAssessment?.overall.status ?? 'GREEN'})`,
-      `Ground Comms Mode: ${groundState.mode}`,
-      `-------------------------------------------------------------`,
+      `Mission: ${profile.missionName} | Sol ${profile.currentMissionDay}`,
+      `Generated: ${new Date().toISOString()}`,
+      `Health Score: ${latestAssessment?.overall.score ?? 95}/100`,
       ``,
       ...messages.map((m) => {
-        const who = m.sender === 'user' ? `${profile.callSign} (Astronaut)` : 'Dr. Orion (AI Flight Surgeon)';
-        return `[${new Date(m.timestamp).toLocaleTimeString()}] ${who}:\n${m.text}\n`;
+        const who = m.sender === 'user' ? `[${profile.callSign}]` : '[Dr. Orion AI]';
+        return `${new Date(m.timestamp).toLocaleTimeString()} ${who}\n${m.text}\n`;
       }),
-      `=============================================================`,
-      `DISCLAIMER: Operational decision-support prototype. Complies with NASA-STD-3001.`,
-    ].join('\n');
-
-    const blob = new Blob([transcript], { type: 'text/plain' });
+      ``,
+      `Note: Operational decision-support prototype. All data is simulated demonstration telemetry.`,
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Aegis_Consultation_Sol_${profile.currentMissionDay}.txt`;
+    a.download = `Aegis_Consultation_Sol${profile.currentMissionDay}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const hasApiKey = Boolean(getGeminiApiKey());
+
   return (
-    <div className={`flex flex-col h-full bg-[#070b1a]/95 rounded-2xl border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl ${isFloating ? 'max-h-[640px]' : ''}`}>
-      {/* Header HUD */}
-      <div className="px-4 py-3 border-b border-white/10 bg-slate-900/60 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-0.5 flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <Bot className="w-5 h-5 text-white" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-white tracking-wide truncate">
-                Dr. Orion <span className="text-xs font-normal text-blue-400">AI Flight Surgeon</span>
-              </h3>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Active Telemetry
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 truncate">
-              {profile.name} • Sol {profile.currentMissionDay} • Score: {latestAssessment?.overall.score ?? 95}/100
-            </p>
-          </div>
+    <div className={`flex flex-col bg-[#060b18] rounded-2xl border border-white/10 shadow-2xl overflow-hidden ${isFloating ? 'h-full' : 'h-full'}`}>
+
+      {/* ── HEADER ── */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-[#0a0f24]/80 backdrop-blur-xl shrink-0">
+        {/* Avatar */}
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
+          <Bot className="w-5 h-5 text-white" />
         </div>
 
-        {/* Right Header Controls */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Gemini API Key Status Pill */}
-          <button
-            type="button"
-            onClick={() => setIsKeyModalOpen(true)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all border ${
-              hasApiKey
-                ? 'border-blue-500/40 bg-blue-500/15 text-blue-300 hover:bg-blue-500/25'
-                : 'border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 animate-pulse'
-            }`}
-            title="Configure Gemini API Key"
-          >
-            <Key className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline font-mono text-[11px]">
-              {hasApiKey ? activeModel : 'Add Gemini Key'}
+        {/* Title */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-bold text-white">Dr. Orion</span>
+            <span className="text-xs text-blue-400 font-medium">AI Flight Surgeon</span>
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Active Telemetry
             </span>
-          </button>
+          </div>
+          <p className="text-[11px] text-slate-400 truncate">
+            {profile.name} • Sol {profile.currentMissionDay} • Score: {latestAssessment?.overall.score ?? 95}/100
+          </p>
+        </div>
 
-          {/* Export Transcript */}
+        {/* Controls */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* API Key pill — shows model if connected, warning pulse if not */}
           <button
             type="button"
-            onClick={handleExportTranscript}
-            className="p-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-            title="Export Medical Transcript (.txt)"
+            onClick={() => { setIsKeyModalOpen(true); }}
+            title="Configure Gemini API Key"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-all ${
+              hasApiKey
+                ? 'border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20'
+                : 'border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 animate-pulse'
+            }`}
           >
-            <Download className="w-4 h-4" />
+            {hasApiKey ? <Wifi className="w-3 h-3 text-blue-400" /> : <WifiOff className="w-3 h-3 text-amber-400" />}
+            <span className="hidden sm:inline">{hasApiKey ? activeModel : 'Add API Key'}</span>
           </button>
 
-          {/* Clear Session */}
-          <button
-            type="button"
-            onClick={handleClearHistory}
-            className="p-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-slate-300 hover:text-rose-400 transition-colors"
-            title="Reset Chat Session"
-          >
-            <RotateCcw className="w-4 h-4" />
+          <button type="button" onClick={handleExport} title="Export transcript" className="p-1.5 rounded-lg border border-white/8 hover:bg-white/8 text-slate-400 hover:text-white transition-colors">
+            <Download className="w-3.5 h-3.5" />
           </button>
-
-          {/* Close Floating button if in floating drawer */}
+          <button type="button" onClick={handleClearHistory} title="Clear session" className="p-1.5 rounded-lg border border-white/8 hover:bg-white/8 text-slate-400 hover:text-rose-400 transition-colors">
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
           {isFloating && onCloseFloating && (
-            <button
-              type="button"
-              onClick={onCloseFloating}
-              className="p-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-colors ml-1"
-              title="Close Chat"
-            >
-              <ChevronDown className="w-4 h-4" />
+            <button type="button" onClick={onCloseFloating} title="Close" className="p-1.5 rounded-lg border border-white/8 hover:bg-white/8 text-slate-400 hover:text-white transition-colors ml-0.5">
+              <ChevronDown className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Ground Link Status Bar if Mars Delay active */}
+      {/* Mars delay banner */}
       {groundState.mode === 'mars_delay' && (
-        <div className="px-4 py-1.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between text-xs text-amber-300">
-          <div className="flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>Mars Latency Active (22 min delay). Dr. Orion operating in <strong>Autonomous EIMO Protocol</strong> mode.</span>
-          </div>
+        <div className="px-4 py-1.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-xs text-amber-300 shrink-0">
+          <Radio className="w-3.5 h-3.5 animate-pulse" />
+          <span>Mars Delay Mode active (22-min latency) — Dr. Orion running autonomous EIMO 2023 protocol.</span>
         </div>
       )}
 
-      {/* Message Stream */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* No API key notice */}
+      {!hasApiKey && (
+        <div className="mx-4 mt-3 px-4 py-3 rounded-xl bg-amber-500/8 border border-amber-500/25 text-xs text-amber-200 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
+            <span><strong>Offline Mode:</strong> Add your free Gemini API key to enable live AI reasoning from Google.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsKeyModalOpen(true)}
+            className="shrink-0 px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-200 font-semibold text-xs transition-colors"
+          >
+            Add Key
+          </button>
+        </div>
+      )}
+
+      {/* ── MESSAGES STREAM ── */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
         {messages.map((msg) => {
           const isUser = msg.sender === 'user';
           return (
-            <div
-              key={msg.id}
-              className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-            >
-              {/* Avatar */}
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs shadow-md ${
-                  isUser
-                    ? 'bg-gradient-to-tr from-blue-500 to-cyan-500 text-white'
-                    : 'bg-gradient-to-tr from-indigo-600 to-blue-700 text-white border border-white/20'
-                }`}
-              >
-                {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+            <div key={msg.id} className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+              {/* Avatar bubble */}
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-md mt-0.5 ${
+                isUser
+                  ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                  : 'bg-gradient-to-br from-indigo-600 to-blue-700 border border-white/15'
+              }`}>
+                {isUser ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
               </div>
 
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed transition-all shadow-lg ${
-                  isUser
-                    ? 'bg-blue-600/90 text-white rounded-tr-none'
-                    : 'bg-slate-900/80 text-slate-200 border border-white/10 rounded-tl-none backdrop-blur-md'
-                }`}
-              >
-                {/* Header label for AI */}
+              {/* Bubble */}
+              <div className={`flex-1 max-w-[85%] ${isUser ? 'flex flex-col items-end' : ''}`}>
+                {/* Bubble header label */}
                 {!isUser && (
-                  <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10 text-[11px] text-slate-400">
-                    <span className="font-semibold text-blue-300 flex items-center gap-1">
+                  <div className="flex items-center gap-2 mb-1.5 pl-0.5">
+                    <span className="text-[11px] font-semibold text-blue-300 flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-blue-400" /> Dr. Orion AI
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono text-slate-500">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {msg.modelUsed && (
+                      <span className="text-[10px] font-mono text-slate-500 bg-slate-800/60 px-1.5 py-0.5 rounded-md border border-white/5">
+                        {msg.modelUsed}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(msg.text, msg.id)}
-                        className="text-slate-400 hover:text-white transition-colors"
-                        title="Copy Response"
-                      >
-                        {copiedMsgId === msg.id ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
+                    )}
+                    <span className="text-[10px] text-slate-600">
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
                 )}
 
-                {/* Body Content - Markdown formatted */}
-                <div className="prose prose-invert prose-xs max-w-none space-y-2 whitespace-pre-wrap">
-                  {msg.text}
+                <div className={`relative group rounded-2xl px-4 py-3 shadow-lg ${
+                  isUser
+                    ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-sm'
+                    : 'bg-[#0d1530]/90 border border-white/8 rounded-tl-sm backdrop-blur-sm'
+                }`}>
+                  {/* Copy button */}
+                  {!isUser && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(msg.text, msg.id)}
+                      className="absolute top-2.5 right-2.5 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 text-slate-500 hover:text-white transition-all"
+                      title="Copy response"
+                    >
+                      {copiedMsgId === msg.id
+                        ? <Check className="w-3 h-3 text-emerald-400" />
+                        : <Copy className="w-3 h-3" />
+                      }
+                    </button>
+                  )}
+
+                  {/* Message content */}
+                  {isUser ? (
+                    <p className="text-sm text-white leading-relaxed">{msg.text}</p>
+                  ) : (
+                    <MarkdownMessage content={msg.text} />
+                  )}
                 </div>
 
-                {/* Suggestions Pills attached to AI message */}
-                {msg.suggestions && msg.suggestions.length > 0 && (
-                  <div className="pt-3 mt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+                {/* Suggestion chips attached to message */}
+                {!isUser && msg.suggestions && msg.suggestions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 pl-0.5">
                     {msg.suggestions.map((sug, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleSend(sug)}
                         disabled={isGenerating}
-                        className="text-[11px] px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/25 border border-blue-500/20 text-blue-300 transition-all text-left"
+                        className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-blue-600/25 border border-white/8 hover:border-blue-500/40 text-slate-300 hover:text-blue-200 transition-all disabled:opacity-50 leading-tight text-left"
                       >
                         {sug}
                       </button>
                     ))}
                   </div>
                 )}
+
+                {/* User timestamp */}
+                {isUser && (
+                  <span className="text-[10px] text-slate-600 mt-1 mr-0.5 block text-right">
+                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
               </div>
             </div>
           );
         })}
 
-        {/* Typing indicator */}
+        {/* Generating indicator */}
         {isGenerating && (
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-700 text-white flex items-center justify-center shrink-0">
-              <Bot className="w-4 h-4 animate-bounce" />
+          <div className="flex gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 border border-white/15 flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="p-3.5 rounded-2xl rounded-tl-none bg-slate-900/80 border border-white/10 text-slate-400 text-xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-              <span>Dr. Orion is evaluating biomedical telemetry with Gemini AI...</span>
+            <div className="rounded-2xl rounded-tl-sm bg-[#0d1530]/90 border border-white/8 px-4 py-3 flex items-center gap-2">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+              <span className="text-xs text-slate-400">
+                Dr. Orion is analyzing your telemetry{hasApiKey ? ` via ${activeModel}` : ' (offline mode)'}...
+              </span>
             </div>
           </div>
         )}
@@ -373,57 +387,58 @@ Ask me anything regarding your physiological status, countermeasure exercises, r
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Prompt Chips (above input) */}
-      <div className="px-4 py-2 border-t border-white/10 bg-slate-900/40 flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider shrink-0 flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-blue-400" /> Prompts:
-        </span>
-        {INITIAL_SUGGESTIONS.map((prompt, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => handleSend(prompt)}
-            disabled={isGenerating}
-            className="px-2.5 py-1 rounded-lg text-[11px] text-slate-300 hover:text-white bg-slate-800/80 hover:bg-blue-600/30 border border-white/10 hover:border-blue-500/30 whitespace-nowrap transition-all"
-          >
-            {prompt}
-          </button>
-        ))}
+      {/* ── QUICK PROMPT CHIPS ── */}
+      <div className="px-4 py-2 border-t border-white/8 bg-[#080c1e]/60 overflow-x-auto no-scrollbar shrink-0">
+        <div className="flex items-center gap-2 w-max">
+          {QUICK_PROMPTS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => handleSend(p.text)}
+              disabled={isGenerating}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800/60 hover:bg-blue-600/25 border border-white/8 hover:border-blue-500/35 whitespace-nowrap transition-all disabled:opacity-50"
+            >
+              <span>{p.emoji}</span>
+              <span>{p.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Input Bar */}
-      <div className="p-3 border-t border-white/10 bg-slate-900/90">
+      {/* ── INPUT BAR ── */}
+      <div className="px-4 py-3 border-t border-white/8 bg-[#0a0f24]/90 shrink-0">
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
+          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
           className="flex items-center gap-2"
         >
           <input
+            ref={inputRef}
             type="text"
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
-            placeholder={`Ask Dr. Orion about vitals, recovery, countermeasures, or mission day ${profile.currentMissionDay}...`}
+            placeholder={`Ask Dr. Orion about your Sol ${profile.currentMissionDay} health, vitals, or countermeasures...`}
             disabled={isGenerating}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 bg-slate-950/80 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 bg-slate-950/80 text-white placeholder-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           />
           <button
             type="submit"
             disabled={!inputPrompt.trim() || isGenerating}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-blue-500/25 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-lg shadow-blue-500/20 transition-all"
           >
             <Send className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Send</span>
           </button>
         </form>
+        <p className="text-[10px] text-slate-700 mt-1.5 text-center">
+          Decision-support prototype · Demonstration data · Complies with NASA-STD-3001
+        </p>
       </div>
 
-      {/* Gemini API Key Modal */}
+      {/* Gemini Key Modal */}
       <GeminiApiKeyModal
         isOpen={isKeyModalOpen}
         onClose={() => setIsKeyModalOpen(false)}
-        onKeyUpdated={handleKeyUpdated}
+        onKeyUpdated={refreshKeyState}
       />
     </div>
   );

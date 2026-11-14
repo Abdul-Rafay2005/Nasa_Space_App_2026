@@ -56,3 +56,208 @@
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ================================================================
+   MARKDOWN MESSAGE RENDERER — Dr. Orion AI Chat Styling
+   ================================================================ */
+.md-root {
+  font-size: 0.8125rem;  /* 13px */
+  line-height: 1.65;
+  color: #e2e8f0;
+  word-break: break-word;
+}
+
+/* Headings */
+.md-root .md-h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0.75rem 0 0.4rem;
+  border-bottom: 1px solid rgba(99,179,237,0.25);
+  padding-bottom: 0.25rem;
+}
+.md-root .md-h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #93c5fd;
+  margin: 0.65rem 0 0.35rem;
+}
+.md-root .md-h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #7dd3fc;
+  margin: 0.5rem 0 0.3rem;
+}
+.md-root .md-h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0.4rem 0 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Paragraphs */
+.md-root .md-p {
+  margin: 0.3rem 0;
+  color: #cbd5e1;
+}
+
+/* Strong / Bold */
+.md-root strong {
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+/* Italic */
+.md-root em {
+  font-style: italic;
+  color: #93c5fd;
+}
+
+/* Inline code */
+.md-root .inline-code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.75rem;
+  background: rgba(30,41,59,0.9);
+  color: #67e8f9;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  border: 1px solid rgba(100,200,220,0.2);
+}
+
+/* Code block */
+.md-root .md-pre {
+  background: rgba(10, 15, 35, 0.95);
+  border: 1px solid rgba(99,179,237,0.2);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+.md-root .md-code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #a5f3fc;
+  display: block;
+  white-space: pre;
+}
+
+/* Unordered list */
+.md-root .md-ul {
+  margin: 0.35rem 0 0.35rem 1rem;
+  list-style: none;
+  padding: 0;
+}
+.md-root .md-ul .md-li {
+  position: relative;
+  padding-left: 1.1rem;
+  margin-bottom: 0.25rem;
+  color: #cbd5e1;
+}
+.md-root .md-ul .md-li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-size: 0.65rem;
+  top: 0.18rem;
+}
+
+/* Ordered list */
+.md-root .md-ol {
+  margin: 0.35rem 0 0.35rem 0;
+  list-style: none;
+  padding: 0;
+  counter-reset: md-counter;
+}
+.md-root .md-ol .md-li {
+  position: relative;
+  padding-left: 1.6rem;
+  margin-bottom: 0.3rem;
+  color: #cbd5e1;
+  counter-increment: md-counter;
+}
+.md-root .md-ol .md-li::before {
+  content: counter(md-counter) '.';
+  position: absolute;
+  left: 0;
+  color: #60a5fa;
+  font-weight: 700;
+  font-size: 0.75rem;
+  min-width: 1.3rem;
+}
+
+/* Blockquote */
+.md-root .md-blockquote {
+  border-left: 3px solid rgba(99,179,237,0.5);
+  background: rgba(30,58,138,0.12);
+  border-radius: 0 8px 8px 0;
+  padding: 0.5rem 0.75rem;
+  margin: 0.4rem 0;
+}
+.md-root .md-blockquote .md-bq-p {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+/* Table */
+.md-root .md-table-wrap {
+  overflow-x: auto;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+}
+.md-root .md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.md-root .md-th {
+  background: rgba(30,58,138,0.5);
+  color: #93c5fd;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid rgba(99,179,237,0.3);
+  white-space: nowrap;
+}
+.md-root .md-td {
+  color: #cbd5e1;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.md-root .md-table tbody tr:last-child .md-td {
+  border-bottom: none;
+}
+.md-root .md-table tbody tr:hover .md-td {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Horizontal rule */
+.md-root .md-hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 0.6rem 0;
+}
+
+/* Links */
+.md-root .md-link {
+  color: #60a5fa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-root .md-link:hover {
+  color: #93c5fd;
+}
+
+/* Hide consecutive <br> so double blank lines don't create large gaps */
+.md-root br {
+  line-height: 0.4;
+}
+
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
