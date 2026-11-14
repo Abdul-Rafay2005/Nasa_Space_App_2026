@@ -31,11 +31,11 @@ interface GeminiApiKeyModalProps {
 }
 
 const PRESET_MODELS = [
-  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', badge: 'Recommended' },
-  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash', badge: 'Fast' },
-  { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', badge: 'Deep reasoning' },
-  { id: 'gemini-2.0-flash-thinking-exp', label: 'Gemini 2.0 Flash Thinking (Exp)', badge: 'Experimental' },
-  { id: 'gemini-exp-1206', label: 'Gemini Exp 1206', badge: 'Experimental' },
+  { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash', badge: 'Active / Recommended' },
+  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash', badge: 'Fast' },
+  { id: 'gemini-flash-latest', label: 'Gemini Flash Latest', badge: 'Auto-updating' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', badge: 'Standard' },
+  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', badge: 'Standard' },
 ];
 
 export const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({

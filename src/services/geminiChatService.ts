@@ -16,7 +16,7 @@ const API_KEY_STORAGE = 'aegis_gemini_api_key_v1';
 const MODEL_STORAGE = 'aegis_gemini_model_v1';
 const CHAT_HISTORY_STORAGE = 'aegis_chat_history_v1';
 
-export const DEFAULT_MODEL = 'gemini-2.0-flash';
+export const DEFAULT_MODEL = 'gemini-3.8-flash';
 
 /**
  * Get stored Gemini API Key — always reads live from localStorage so it reflects
@@ -266,9 +266,18 @@ export async function sendGeminiChatMessage(
 
   contents.push({ role: 'user', parts: [{ text: userMessage }] });
 
-  // Try the selected model first, then fallback models if needed
-  const modelsToTry = [model, 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
-  const uniqueModels = [...new Set(modelsToTry)];
+  // Try the selected model first, then known operational models for this API key
+  const cleanSelected = model.replace(/^models\//, '').trim();
+  const modelsToTry = [
+    cleanSelected,
+    'gemini-3.8-flash',
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+  ];
+  const uniqueModels = [...new Set(modelsToTry.map((m) => m.replace(/^models\//, '').trim()).filter(Boolean))];
 
   for (const tryModel of uniqueModels) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${apiKey}`;
